@@ -71,6 +71,7 @@ export default defineConfig([
   },
   {
     files: ['apps/**/*.tsx'],
+    ignores: ['apps/*/src/routes/**'], // TanStack's router plugin handles HMR for route files
     extends: [reactRefresh.configs.vite],
   },
 
