@@ -1,0 +1,5 @@
+pnpm-lock.yaml
+**/routeTree.gen.ts
+packages/types/db.ts
+docs/
+CLAUDE.md
