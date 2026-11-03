@@ -8,11 +8,12 @@
     "build": "vite build && node scripts/check-bundle-size.js",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p .",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run --passWithNoTests --dir src",
     "size": "node scripts/check-bundle-size.js"
   },
   "dependencies": {
     "@repo/config": "workspace:*",
+    "@repo/ui": "workspace:*",
     "@tanstack/react-query": "^5.105.3",
     "@tanstack/react-router": "^1.170.46",
     "react": "^19.3.1",

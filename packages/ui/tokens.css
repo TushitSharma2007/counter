@@ -1,0 +1,102 @@
+/*
+ * Design tokens. The only source of colour, type, spacing, radius, shadow and motion values.
+ * Components and apps use these through the Tailwind theme in theme.css, never raw values.
+ *
+ * Light: paper and espresso ink, like a well-kept ledger.
+ * Night: a designed dark theme for KDS and late shifts, not an inversion.
+ * Each tenant sets one colour, --brand, on <html> at runtime. It must have at least 4.5:1 contrast
+ * with white. Light uses it as the accent; Night derives a lighter tone of the same hue.
+ */
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/fraunces/opsz.css';
+
+:root {
+  /* Surfaces */
+  --paper: #f7f3ec;
+  --surface: #fffdf9;
+  --sunken: #efe8dc;
+
+  /* Ink */
+  --ink: #1e1916;
+  --ink-2: #5c524a;
+  --ink-3: #8c8178; /* placeholders and disabled only, never body copy */
+
+  /* Hairlines */
+  --line: rgb(30 25 22 / 0.12);
+  --line-strong: rgb(30 25 22 / 0.24);
+
+  /* Tenant accent (default: fountain-pen ink) */
+  --brand: #2c4a7c;
+  --accent: var(--brand);
+  --on-accent: #ffffff;
+  --accent-pressed: color-mix(in oklab, var(--accent) 82%, black);
+  --accent-soft: color-mix(in oklab, var(--accent) 11%, var(--surface));
+
+  /* State: used only for state (paid, pending, void, low stock) */
+  --success: #2f6b3f;
+  --warning: #8f5a00;
+  --danger: #a63a2b;
+  --success-soft: color-mix(in oklab, var(--success) 12%, var(--surface));
+  --warning-soft: color-mix(in oklab, var(--warning) 13%, var(--surface));
+  --danger-soft: color-mix(in oklab, var(--danger) 11%, var(--surface));
+  --neutral-soft: var(--sunken);
+
+  --scrim: rgb(30 25 22 / 0.36);
+
+  /* Type */
+  --font-ui: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Fraunces Variable', ui-serif, Georgia, serif;
+
+  /* Shadow: warm-tinted, used only for things that float (sheets, dialogs, toasts) */
+  --shadow-float: 0 1px 0 rgb(30 25 22 / 0.04), 0 12px 32px -12px rgb(30 25 22 / 0.28);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-stamp: 900ms; /* the one exception to the 200 ms rule (CLAUDE.md §6.5) */
+
+  /* Touch */
+  --tap: 3rem; /* 48px minimum on POS screens */
+  --tap-lg: 3.5rem;
+
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  --paper: #14110f;
+  --surface: #1d1815;
+  --sunken: #0e0b0a;
+
+  --ink: #f2eadf;
+  --ink-2: #b9ac9e;
+  --ink-3: #807468;
+
+  --line: rgb(242 234 223 / 0.1);
+  --line-strong: rgb(242 234 223 / 0.2);
+
+  --accent: oklch(from var(--brand) 0.8 c h);
+  --on-accent: #10131a;
+  --accent-pressed: color-mix(in oklab, var(--accent) 82%, white);
+  --accent-soft: color-mix(in oklab, var(--accent) 16%, var(--surface));
+
+  --success: #86c796;
+  --warning: #e6b45a;
+  --danger: #f08b79;
+  --success-soft: color-mix(in oklab, var(--success) 16%, var(--surface));
+  --warning-soft: color-mix(in oklab, var(--warning) 16%, var(--surface));
+  --danger-soft: color-mix(in oklab, var(--danger) 16%, var(--surface));
+
+  --scrim: rgb(0 0 0 / 0.56);
+  --shadow-float: 0 0 0 1px var(--line), 0 16px 40px -12px rgb(0 0 0 / 0.7);
+
+  color-scheme: dark;
+}
+
+/* Browsers without relative colour syntax (Chrome < 119, Safari < 16.4) get the default ink tone at night. */
+@supports not (color: oklch(from red l c h)) {
+  [data-theme='dark'] {
+    --accent: #9db7e8;
+  }
+}
