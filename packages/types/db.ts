@@ -5,7 +5,39 @@ export type Database = {
   
   "public": {
           Tables: {
-            "memberships": {
+            "devices": {
+                  Row: {
+                    "code": string,"created_at": string,"created_by": string | null,"id": string,"label": string,"last_seen_at": string | null,"org_id": string,"outlet_id": string,"revoked_at": string | null,"secret_hash": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "code": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"label": string,"last_seen_at"?: string | null,"org_id": string,"outlet_id": string,"revoked_at"?: string | null,"secret_hash": string
+                  }
+                  Update: {
+                    "code"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"label"?: string,"last_seen_at"?: string | null,"org_id"?: string,"outlet_id"?: string,"revoked_at"?: string | null,"secret_hash"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "devices_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "devices_org_id_fkey"
+      columns: ["org_id"]
+isOneToOne: false
+      referencedRelation: "orgs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "devices_outlet_id_fkey"
+      columns: ["outlet_id"]
+isOneToOne: false
+      referencedRelation: "outlets"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"memberships": {
                   Row: {
                     "created_at": string,"id": string,"is_active": boolean,"org_id": string,"outlet_ids": (string)[],"role": Database["public"]['Enums']["app_role"],"user_id": string
                   }
@@ -79,14 +111,49 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"staff_pins": {
+                  Row: {
+                    "failed_attempts": number,"locked_until": string | null,"membership_id": string,"pin_hash": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "failed_attempts"?: number,"locked_until"?: string | null,"membership_id": string,"pin_hash": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "failed_attempts"?: number,"locked_until"?: string | null,"membership_id"?: string,"pin_hash"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "staff_pins_membership_id_fkey"
+      columns: ["membership_id"]
+isOneToOne: true
+      referencedRelation: "memberships"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
             [_ in never]: never
           }
           Functions: {
-            "health":
+            "device_roster":
+{ Args: { "p_device_id": string,"p_secret": string }; Returns: Json
+                           },
+"health":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"register_device":
+{ Args: { "p_label": string,"p_outlet_id": string }; Returns: Json
+                           },
+"revoke_device":
+{ Args: { "p_device_id": string }; Returns: undefined
+                           },
+"set_staff_pin":
+{ Args: { "p_membership_id": string,"p_pin": string }; Returns: undefined
+                           },
+"verify_staff_pin":
+{ Args: { "p_device_id": string,"p_membership_id": string,"p_pin": string,"p_secret": string }; Returns: Json
                            }
           }
           Enums: {
