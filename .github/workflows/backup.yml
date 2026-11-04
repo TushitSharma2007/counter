@@ -1,0 +1,42 @@
+name: Nightly database backup
+
+# The free tier has no usable backups (CLAUDE.md §7). Dumps roles, schema and data every night
+# and keeps them as a private workflow artifact for 30 days.
+# Repo secret: SUPABASE_PROD_DB_URL — the Session pooler connection string (GitHub runners have
+# no IPv6, so the direct connection string won't work).
+
+on:
+  schedule:
+    - cron: '30 21 * * *' # 03:00 IST
+  workflow_dispatch:
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    env:
+      DB_URL: ${{ secrets.SUPABASE_PROD_DB_URL }}
+    steps:
+      - name: Check secret
+        id: check
+        run: |
+          if [ -z "$DB_URL" ]; then
+            echo "::notice::SUPABASE_PROD_DB_URL not set; skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: supabase/setup-cli@v1
+        if: steps.check.outputs.skip != 'true'
+        with:
+          version: latest
+      - name: Dump
+        if: steps.check.outputs.skip != 'true'
+        run: |
+          mkdir backup
+          supabase db dump --db-url "$DB_URL" -f backup/roles.sql --role-only
+          supabase db dump --db-url "$DB_URL" -f backup/schema.sql
+          supabase db dump --db-url "$DB_URL" -f backup/data.sql --data-only --use-copy
+      - uses: actions/upload-artifact@v4
+        if: steps.check.outputs.skip != 'true'
+        with:
+          name: db-backup-${{ github.run_id }}
+          path: backup/
+          retention-days: 30

@@ -21,3 +21,14 @@ jobs:
       - run: pnpm test
       # The loyalty build also enforces the 120 KB first-route budget.
       - run: pnpm build
+
+  database:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      # Postgres only (no API, auth or studio): applies migrations, then runs supabase/tests.
+      - run: supabase db start
+      - run: supabase test db
