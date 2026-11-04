@@ -5,7 +5,81 @@ export type Database = {
   
   "public": {
           Tables: {
-            [_ in never]: never
+            "memberships": {
+                  Row: {
+                    "created_at": string,"id": string,"is_active": boolean,"org_id": string,"outlet_ids": (string)[],"role": Database["public"]['Enums']["app_role"],"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"is_active"?: boolean,"org_id": string,"outlet_ids"?: (string)[],"role": Database["public"]['Enums']["app_role"],"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"is_active"?: boolean,"org_id"?: string,"outlet_ids"?: (string)[],"role"?: Database["public"]['Enums']["app_role"],"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "memberships_org_id_fkey"
+      columns: ["org_id"]
+isOneToOne: false
+      referencedRelation: "orgs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "memberships_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"orgs": {
+                  Row: {
+                    "created_at": string,"day_close_hour": number,"gst_scheme": string,"gstin": string | null,"id": string,"modules": (string)[],"name": string,"plan": string,"prices_include_tax": boolean,"slug": string,"timezone": string,"usage": NonNullable<Json>
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"day_close_hour"?: number,"gst_scheme"?: string,"gstin"?: string | null,"id"?: string,"modules"?: (string)[],"name": string,"plan"?: string,"prices_include_tax"?: boolean,"slug": string,"timezone"?: string,"usage"?: NonNullable<Json>
+                  }
+                  Update: {
+                    "created_at"?: string,"day_close_hour"?: number,"gst_scheme"?: string,"gstin"?: string | null,"id"?: string,"modules"?: (string)[],"name"?: string,"plan"?: string,"prices_include_tax"?: boolean,"slug"?: string,"timezone"?: string,"usage"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"outlets": {
+                  Row: {
+                    "address": string | null,"city": string | null,"code": string,"created_at": string,"id": string,"is_active": boolean,"name": string,"org_id": string,"upi_vpa": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "address"?: string | null,"city"?: string | null,"code": string,"created_at"?: string,"id"?: string,"is_active"?: boolean,"name": string,"org_id": string,"upi_vpa"?: string | null
+                  }
+                  Update: {
+                    "address"?: string | null,"city"?: string | null,"code"?: string,"created_at"?: string,"id"?: string,"is_active"?: boolean,"name"?: string,"org_id"?: string,"upi_vpa"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "outlets_org_id_fkey"
+      columns: ["org_id"]
+isOneToOne: false
+      referencedRelation: "orgs"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"profiles": {
+                  Row: {
+                    "created_at": string,"full_name": string,"id": string,"phone": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"full_name": string,"id": string,"phone"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"full_name"?: string,"id"?: string,"phone"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                }
           }
           Views: {
             [_ in never]: never
@@ -16,7 +90,7 @@ export type Database = {
                            }
           }
           Enums: {
-            [_ in never]: never
+            "app_role": "owner"|"manager"|"cashier"|"kitchen"|"loyalty_staff"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -132,7 +206,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            
+            "app_role": ["owner", "manager", "cashier", "kitchen", "loyalty_staff"]
           }
         }
 } as const
