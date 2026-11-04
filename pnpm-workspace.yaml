@@ -3,6 +3,7 @@ packages:
   - packages/*
   - tools/*
 
-# pnpm 10 blocks dependency build scripts by default; the Supabase CLI downloads its binary in one.
+# pnpm 10 blocks dependency build scripts by default. These two need theirs to install a binary.
 onlyBuiltDependencies:
+  - esbuild
   - supabase

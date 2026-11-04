@@ -1,0 +1,11 @@
+@import 'tailwindcss';
+@import '@repo/ui/theme.css';
+
+@source './';
+
+/* Video frames: never let a stray scrollbar or caret show. */
+html,
+body {
+  margin: 0;
+  overflow: hidden;
+}
