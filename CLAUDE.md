@@ -42,7 +42,7 @@ It runs **on every device**: phones, tablets and PCs, as one responsive installa
 | Loyalty stamp (QR) | QR in the café that the customer scans with their phone camera: either a **rotating QR on a counter display** (recommended; tokens generated on the display, TOTP-style, no polling) or a printed static QR with stricter limits | n/a | n/a |
 | Stamp link domain | A **short, dedicated domain** used only for tag/QR links (`https://<stamp-domain>/s/…` and `/q/…`). Set in `packages/config/brand.ts` (placeholder until bought). It is written into NFC tags, so it must never change; the main brand domain can. | n/a | n/a |
 | QR scanning (in-app fallback) | Native `BarcodeDetector`, with `@zxing/browser` fallback (needed on iOS) | n/a | n/a |
-| Stamp animation | `motion` (Framer Motion) + SVG, plus `navigator.vibrate` haptics | n/a | n/a |
+| Stamp animation | Browser **Web Animations API** (`element.animate`) + SVG, plus `navigator.vibrate` haptics. No animation library: 0 KB, which keeps the loyalty card under its 120 KB budget. | n/a | n/a |
 | Printing | Browser print with 58mm/80mm thermal CSS | n/a | ESC/POS through WebUSB/Web Bluetooth, or a small local print bridge |
 | Charts | Recharts, or hand-built SVG for small sparklines | n/a | n/a |
 | Monorepo | **pnpm workspaces + Turborepo** | n/a | n/a |
@@ -333,6 +333,7 @@ Decided 2026-11-04, after the first doc review. The sections above already refle
 | GST: `regular` or `composition` per org; prices inclusive by default | Client's registration not confirmed yet |
 | UPI QR full-screen on the counter tablet; 58/80 mm browser print | Assumed hardware until the client confirms |
 | `loyalty-core` built right after the design system | Pure logic, no dependencies |
+| Stamp animation uses the Web Animations API, not `motion` | React + router already use ~100 KB of the 120 KB card budget |
 | Short dedicated stamp-link domain for `/s/` and `/q/` only | It's baked into tags; the brand domain can change |
 
 **Still open:** kiosk GSTIN, stamp-link domain (placeholder in config), NFC reader model (RC522 or PN532).
