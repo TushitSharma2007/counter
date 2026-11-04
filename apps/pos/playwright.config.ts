@@ -1,14 +1,19 @@
 import { defineConfig, devices } from '@playwright/test';
 
 // Device baselines from CLAUDE.md §8: phone, 10" tablet in landscape, laptop.
+// Runs against the local Supabase stack (pnpm db:start) through .env.e2e, on its own port so it
+// never reuses a dev server that points at the hosted project.
+const port = 5290;
+
 export default defineConfig({
   testDir: './e2e',
   outputDir: './test-results',
   reporter: 'list',
-  use: { baseURL: 'http://localhost:5280' },
+  workers: 1, // the auth flow shares seeded staff (PIN lockout counters) across projects
+  use: { baseURL: `http://localhost:${port}` },
   webServer: {
-    command: 'pnpm dev',
-    url: 'http://localhost:5280',
+    command: `pnpm exec vite --mode e2e --port ${port} --strictPort`,
+    url: `http://localhost:${port}`,
     reuseExistingServer: true,
   },
   projects: [

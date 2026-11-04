@@ -10,11 +10,30 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CounterRouteImport } from './routes/counter'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as PinRouteImport } from './routes/pin'
 import { Route as PlaygroundRouteImport } from './routes/playground'
+import { Route as DeviceSetupRouteImport } from './routes/device.setup'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CounterRoute = CounterRouteImport.update({
+  id: '/counter',
+  path: '/counter',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PinRoute = PinRouteImport.update({
+  id: '/pin',
+  path: '/pin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlaygroundRoute = PlaygroundRouteImport.update({
@@ -22,31 +41,60 @@ const PlaygroundRoute = PlaygroundRouteImport.update({
   path: '/playground',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DeviceSetupRoute = DeviceSetupRouteImport.update({
+  id: '/device/setup',
+  path: '/device/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/counter': typeof CounterRoute
+  '/login': typeof LoginRoute
+  '/pin': typeof PinRoute
   '/playground': typeof PlaygroundRoute
+  '/device/setup': typeof DeviceSetupRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/counter': typeof CounterRoute
+  '/login': typeof LoginRoute
+  '/pin': typeof PinRoute
   '/playground': typeof PlaygroundRoute
+  '/device/setup': typeof DeviceSetupRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/counter': typeof CounterRoute
+  '/login': typeof LoginRoute
+  '/pin': typeof PinRoute
   '/playground': typeof PlaygroundRoute
+  '/device/setup': typeof DeviceSetupRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/playground'
+  fullPaths:
+    '/' | '/counter' | '/login' | '/pin' | '/playground' | '/device/setup'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/playground'
-  id: '__root__' | '/' | '/playground'
+  to: '/' | '/counter' | '/login' | '/pin' | '/playground' | '/device/setup'
+  id:
+    | '__root__'
+    | '/'
+    | '/counter'
+    | '/login'
+    | '/pin'
+    | '/playground'
+    | '/device/setup'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CounterRoute: typeof CounterRoute
+  LoginRoute: typeof LoginRoute
+  PinRoute: typeof PinRoute
   PlaygroundRoute: typeof PlaygroundRoute
+  DeviceSetupRoute: typeof DeviceSetupRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,6 +106,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/counter': {
+      id: '/counter'
+      path: '/counter'
+      fullPath: '/counter'
+      preLoaderRoute: typeof CounterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pin': {
+      id: '/pin'
+      path: '/pin'
+      fullPath: '/pin'
+      preLoaderRoute: typeof PinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/playground': {
       id: '/playground'
       path: '/playground'
@@ -65,12 +134,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlaygroundRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/device/setup': {
+      id: '/device/setup'
+      path: '/device/setup'
+      fullPath: '/device/setup'
+      preLoaderRoute: typeof DeviceSetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CounterRoute: CounterRoute,
+  LoginRoute: LoginRoute,
+  PinRoute: PinRoute,
   PlaygroundRoute: PlaygroundRoute,
+  DeviceSetupRoute: DeviceSetupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -53,6 +53,11 @@ export default defineConfig([
     },
     rules: {
       '@typescript-eslint/consistent-type-imports': 'error',
+      // TanStack Router's documented control flow is `throw redirect(...)`.
+      '@typescript-eslint/only-throw-error': [
+        'error',
+        { allow: [{ from: 'package', package: '@tanstack/router-core', name: 'Redirect' }] },
+      ],
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
       'no-restricted-imports': ['error', { patterns: vendorSdks }],
       'no-restricted-syntax': ['error', ...noEmoji],
