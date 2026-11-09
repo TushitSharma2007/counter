@@ -90,6 +90,9 @@ importers:
       '@repo/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@repo/pos-core':
+        specifier: workspace:*
+        version: link:../../packages/pos-core
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -206,6 +209,15 @@ importers:
       '@repo/config':
         specifier: workspace:*
         version: link:../config
+
+  packages/pos-core:
+    devDependencies:
+      '@repo/config':
+        specifier: workspace:*
+        version: link:../config
+      vitest:
+        specifier: ^5.1.0
+        version: 5.1.0(@types/node@26.6.6)(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2))
 
   packages/types:
     devDependencies:

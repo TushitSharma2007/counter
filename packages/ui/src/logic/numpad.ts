@@ -1,9 +1,17 @@
 export type PadKey = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '00' | 'back';
 
-/** Applies one number-pad key to a digit string (cash tendered, quantity, PIN). */
-export function applyPadKey(value: string, key: PadKey, maxLength = 9): string {
+/**
+ * Applies one number-pad key to a digit string (cash tendered, quantity, PIN).
+ * Amounts drop leading zeros; PINs keep them (0246 is a valid PIN).
+ */
+export function applyPadKey(
+  value: string,
+  key: PadKey,
+  maxLength = 9,
+  keepLeadingZeros = false,
+): string {
   if (key === 'back') return value.slice(0, -1);
-  if (value === '' && (key === '0' || key === '00')) return value; // no leading zeros
+  if (!keepLeadingZeros && value === '' && (key === '0' || key === '00')) return value;
   const next = value + key;
   return next.length > maxLength ? value : next;
 }

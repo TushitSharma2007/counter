@@ -4,6 +4,8 @@ export { formatINR, type FormatInrOptions } from './logic/money.ts';
 export { applyPadKey, type PadKey } from './logic/numpad.ts';
 export { syncLabel, type SyncState } from './logic/sync.ts';
 
+export { Avatar, avatarTint, initials, type AvatarProps } from './components/Avatar.tsx';
+
 export {
   Button,
   type ButtonProps,
@@ -17,10 +19,12 @@ export {
   DialogTrigger,
   type DialogContentProps,
 } from './components/Dialog.tsx';
+export { FoodMark, type FoodType } from './components/FoodMark.tsx';
 export { Icon, ICON_STROKE, type IconProps } from './components/Icon.tsx';
 export { Input, type InputProps } from './components/Input.tsx';
 export { NumberPad, type NumberPadProps } from './components/NumberPad.tsx';
 export { PriceTag, type PriceTagProps, type PriceTagSize } from './components/PriceTag.tsx';
+export { Segmented, type SegmentedOption, type SegmentedProps } from './components/Segmented.tsx';
 export {
   Sheet,
   SheetClose,

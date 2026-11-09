@@ -18,19 +18,19 @@
 
   /* Ink */
   --ink: #1e1916;
-  --ink-2: #5c524a;
+  --ink-2: #4b433c;
   --ink-3: #8c8178; /* placeholders and disabled only, never body copy */
 
   /* Hairlines */
-  --line: rgb(30 25 22 / 0.12);
-  --line-strong: rgb(30 25 22 / 0.24);
+  --line: rgb(30 25 22 / 0.14);
+  --line-strong: rgb(30 25 22 / 0.3);
 
   /* Tenant accent (default: fountain-pen ink) */
   --brand: #2c4a7c;
   --accent: var(--brand);
   --on-accent: #ffffff;
   --accent-pressed: color-mix(in oklab, var(--accent) 82%, black);
-  --accent-soft: color-mix(in oklab, var(--accent) 11%, var(--surface));
+  --accent-soft: color-mix(in oklab, var(--accent) 14%, var(--surface));
 
   /* State: used only for state (paid, pending, void, low stock) */
   --success: #2f6b3f;
@@ -42,6 +42,19 @@
   --neutral-soft: var(--sunken);
 
   --scrim: rgb(30 25 22 / 0.36);
+
+  /* Food marks (FSSAI): regulatory symbols, not state colours */
+  --veg: #1b7a36;
+  --nonveg: #8a3b12;
+  --egg: #b07a00;
+
+  /* Staff avatars: muted, told apart at a glance, never used for state */
+  --avatar-1: #c9a27e;
+  --avatar-2: #9fb3a0;
+  --avatar-3: #b7a3c4;
+  --avatar-4: #d4b56a;
+  --avatar-5: #a7bccf;
+  --avatar-6: #d39a8c;
 
   /* Type */
   --font-ui: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
@@ -73,8 +86,8 @@
   --ink-2: #b9ac9e;
   --ink-3: #807468;
 
-  --line: rgb(242 234 223 / 0.1);
-  --line-strong: rgb(242 234 223 / 0.2);
+  --line: rgb(242 234 223 / 0.12);
+  --line-strong: rgb(242 234 223 / 0.24);
 
   --accent: oklch(from var(--brand) 0.8 c h);
   --on-accent: #10131a;
@@ -89,6 +102,9 @@
   --danger-soft: color-mix(in oklab, var(--danger) 16%, var(--surface));
 
   --scrim: rgb(0 0 0 / 0.56);
+  --veg: #4cbb6c;
+  --nonveg: #e0814f;
+  --egg: #e8b84a;
   --shadow-float: 0 0 0 1px var(--line), 0 16px 40px -12px rgb(0 0 0 / 0.7);
 
   color-scheme: dark;

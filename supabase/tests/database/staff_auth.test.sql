@@ -1,6 +1,6 @@
 -- Devices and PINs: who can register devices, what a device's roster reveals, PIN rules, lockout.
 begin;
-select plan(24);
+select plan(25);
 
 -- Fixtures ------------------------------------------------------------------------------------
 insert into auth.users (id, email) values
@@ -57,6 +57,8 @@ select throws_ok($$select public.set_staff_pin('a2000000-0000-0000-0000-00000000
   '22023', null, 'a PIN in a straight run is refused');
 select throws_ok($$select public.set_staff_pin('a2000000-0000-0000-0000-0000000000a1', '12ab')$$,
   '22023', null, 'a PIN with letters is refused');
+select throws_ok($$select public.set_staff_pin('a2000000-0000-0000-0000-0000000000a1', '13579')$$,
+  '22023', null, 'PINs are exactly 4 digits');
 select lives_ok($$select public.set_staff_pin('a2000000-0000-0000-0000-0000000000a1', '1357')$$,
   'owner sets cashier one''s PIN');
 select lives_ok($$select public.set_staff_pin('a2000000-0000-0000-0000-0000000000a2', '2468')$$,

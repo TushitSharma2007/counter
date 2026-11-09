@@ -63,6 +63,7 @@ It runs **on every device**: phones, tablets and PCs, as one responsive installa
 ├─ packages/
 │  ├─ ui/                  # Design system: tokens, components, icons. The only place styles are defined.
 │  ├─ db/                  # Supabase client, typed queries, repositories, offline outbox
+│  ├─ pos-core/            # Pure TS bill totals, GST, cart (no React, no Supabase)
 │  ├─ loyalty-core/        # Pure TS rules engine + stamp/QR/NFC verification (no React, no Supabase)
 │  ├─ notify/              # NotificationAdapter: telegram | webpush | (later) whatsapp | sms
 │  ├─ payments/            # PaymentAdapter: upi-intent | (later) razorpay | cashfree
@@ -335,6 +336,9 @@ Decided 2026-11-04, after the first doc review. The sections above already refle
 | UPI QR full-screen on the counter tablet; 58/80 mm browser print | Assumed hardware until the client confirms |
 | `loyalty-core` built right after the design system | Pure logic, no dependencies |
 | Stamp animation uses the Web Animations API, not `motion` | React + router already use ~100 KB of the 120 KB card budget |
+| POS screens follow a Petpooja-like working layout (not copied): dark top bar, category rail, item grid, bill panel | Owner feedback: the first UI was too calm and editorial for a busy counter |
+| Staff PINs are exactly 4 digits; the pad signs in on the 4th digit | One tap less on every staff switch |
+| Bill maths and the cart live in `packages/pos-core` (pure, tested, Deno-safe) | Totals must be exactly right and shared with edge functions |
 | Short dedicated stamp-link domain for `/s/` and `/q/` only | It's baked into tags; the brand domain can change |
 
 **Still open:** kiosk GSTIN, stamp-link domain (placeholder in config), NFC reader model (RC522 or PN532).

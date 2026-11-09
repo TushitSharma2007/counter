@@ -12,6 +12,8 @@ export interface DialogContentProps {
   children?: ReactNode;
   /** Actions. Stacked on phones (primary on top), in a row on wider screens. */
   footer?: ReactNode;
+  /** md for confirmations, lg for working dialogs (payment, item options). */
+  size?: 'md' | 'lg';
   className?: string;
 }
 
@@ -20,6 +22,7 @@ export function DialogContent({
   description,
   children,
   footer,
+  size = 'md',
   className,
 }: DialogContentProps) {
   return (
@@ -28,7 +31,8 @@ export function DialogContent({
       <Primitive.Content
         {...(description ? {} : { 'aria-describedby': undefined })}
         className={cx(
-          'fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2',
+          'fixed top-1/2 left-1/2 z-50 max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto',
+          size === 'lg' ? 'max-w-2xl' : 'max-w-md',
           'flex flex-col gap-4 rounded-lg bg-surface p-5 shadow-float outline-none',
           'data-[state=closed]:animate-fade-out data-[state=open]:animate-pop-in',
           className,

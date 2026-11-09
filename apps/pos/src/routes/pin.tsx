@@ -6,11 +6,11 @@ import {
   type PinLoginResult,
   type RosterMember,
 } from '@repo/db';
-import { Button, cx, Icon, NumberPad, SyncIndicator } from '@repo/ui';
+import { Avatar, Button, cx, Icon, NumberPad, SyncIndicator } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router';
-import { ArrowLeft } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { ArrowLeft, LoaderCircle } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { setActor } from '../lib/actor.ts';
 import { db } from '../lib/db.ts';
 import { cacheRoster, forgetDevice, loadCachedRoster, loadDevice } from '../lib/device.ts';
@@ -25,12 +25,19 @@ export const Route = createFileRoute('/pin')({
   component: PinScreen,
 });
 
+const PIN_LENGTH = 4;
 const OFFLINE_MAX_TRIES = 5;
 const OFFLINE_LOCK_MS = 5 * 60_000;
 
 const time = new Intl.DateTimeFormat('en-IN', {
   hour: 'numeric',
   minute: '2-digit',
+  timeZone: 'Asia/Kolkata',
+});
+const date = new Intl.DateTimeFormat('en-IN', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
   timeZone: 'Asia/Kolkata',
 });
 
@@ -40,13 +47,17 @@ const ROLE_LABEL: Record<RosterMember['role'], string> = {
   kitchen: 'Kitchen',
 };
 
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .map((word) => word.charAt(0))
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
+function useNow(): Date {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setNow(new Date());
+    }, 15_000);
+    return () => {
+      window.clearInterval(id);
+    };
+  }, []);
+  return now;
 }
 
 function failureMessage(result: Exclude<PinLoginResult, { ok: true }>, name: string): string {
@@ -68,10 +79,12 @@ function failureMessage(result: Exclude<PinLoginResult, { ok: true }>, name: str
   }
 }
 
+/** The lock screen: tap your face, type four digits, you're in. Night theme so "locked" is obvious. */
 function PinScreen() {
   const { device } = Route.useRouteContext();
   const navigate = useNavigate();
   const online = useOnline();
+  const now = useNow();
 
   const roster = useQuery({
     queryKey: ['roster', device.deviceId],
@@ -88,6 +101,7 @@ function PinScreen() {
   const [selected, setSelected] = useState<RosterMember>();
   const [pin, setPin] = useState('');
   const [message, setMessage] = useState<string>();
+  const [shake, setShake] = useState(0);
   const [busy, setBusy] = useState(false);
   const offlineFailures = useRef(new Map<string, { count: number; lockedUntil: number }>());
 
@@ -95,19 +109,25 @@ function PinScreen() {
     return <DeviceRemoved />;
   }
 
+  const fail = (text: string) => {
+    setMessage(text);
+    setShake((n) => n + 1);
+    setPin('');
+  };
+
   const choose = (member: RosterMember) => {
     setSelected(member);
     setPin('');
     setMessage(undefined);
   };
 
-  const signInOffline = async (member: RosterMember): Promise<boolean> => {
+  const checkOffline = async (member: RosterMember, typed: string): Promise<boolean> => {
     const record = offlineFailures.current.get(member.membershipId) ?? { count: 0, lockedUntil: 0 };
     if (record.lockedUntil > Date.now()) {
-      setMessage(`Too many tries. Try again after ${time.format(record.lockedUntil)}.`);
+      fail(`Too many tries. Try again after ${time.format(record.lockedUntil)}.`);
       return false;
     }
-    if (await checkPinOffline(pin, member.pinHash)) {
+    if (await checkPinOffline(typed, member.pinHash)) {
       offlineFailures.current.delete(member.membershipId);
       return true;
     }
@@ -115,41 +135,36 @@ function PinScreen() {
     if (record.count >= OFFLINE_MAX_TRIES) {
       record.count = 0;
       record.lockedUntil = Date.now() + OFFLINE_LOCK_MS;
-      setMessage(`Too many tries. Try again after ${time.format(record.lockedUntil)}.`);
+      fail(`Too many tries. Try again after ${time.format(record.lockedUntil)}.`);
     } else {
       const left = OFFLINE_MAX_TRIES - record.count;
-      setMessage(`Wrong PIN. ${left} ${left === 1 ? 'try' : 'tries'} left.`);
+      fail(`Wrong PIN. ${left} ${left === 1 ? 'try' : 'tries'} left.`);
     }
     offlineFailures.current.set(member.membershipId, record);
     return false;
   };
 
-  const submit = async () => {
+  const submit = async (typed: string) => {
     if (!selected || busy) return;
-    if (pin.length < 4) {
-      setMessage('Your PIN is 4 to 6 digits.');
-      return;
-    }
     setBusy(true);
     setMessage(undefined);
 
-    let mode: 'online' | 'offline' | undefined;
     const result: PinLoginResult = online
-      ? await pinLogin(db, device, selected.membershipId, pin).catch((): PinLoginResult => ({
+      ? await pinLogin(db, device, selected.membershipId, typed).catch((): PinLoginResult => ({
           ok: false,
           reason: 'offline',
         }))
       : { ok: false, reason: 'offline' };
 
+    let mode: 'online' | 'offline' | undefined;
     if (result.ok) mode = 'online';
     else if (result.reason === 'offline') {
-      if (await signInOffline(selected)) mode = 'offline';
+      if (await checkOffline(selected, typed)) mode = 'offline';
     } else {
       if (result.reason === 'device') forgetDevice();
-      setMessage(failureMessage(result, selected.name));
+      fail(failureMessage(result, selected.name));
     }
 
-    setPin('');
     setBusy(false);
     if (mode) {
       setActor({
@@ -163,29 +178,39 @@ function PinScreen() {
     }
   };
 
+  const type = (next: string) => {
+    setPin(next);
+    setMessage(undefined);
+    if (next.length === PIN_LENGTH) void submit(next);
+  };
+
   const data = roster.data;
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="flex h-14 shrink-0 items-center gap-3 border-b border-line px-4 md:px-6">
-        <p className="min-w-0 truncate">
-          <span className="font-display text-md font-semibold">{data?.outlet.name ?? ' '}</span>
-          {data ? (
-            <span className="ml-2 text-sm text-ink-2">
-              {data.outlet.orgName} · {data.device.code}
-            </span>
-          ) : null}
-        </p>
-        <SyncIndicator state={online ? 'live' : 'offline'} className="ml-auto shrink-0" />
-      </header>
+    <div data-theme="dark" className="flex min-h-dvh flex-col bg-canvas text-ink">
+      <main className="grid flex-1 md:grid-cols-[1fr_26rem]">
+        <section className={cx('flex flex-col gap-8 p-6 md:p-10', selected && 'hidden md:flex')}>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="num font-display text-[56px] leading-none font-medium tracking-[-0.03em] md:text-[72px]">
+                {time.format(now)}
+              </p>
+              <p className="mt-2 text-md text-ink-2">{date.format(now)}</p>
+            </div>
+            <SyncIndicator state={online ? 'live' : 'offline'} className="mt-2 shrink-0" />
+          </div>
 
-      <main className="grid flex-1 md:grid-cols-[1fr_22rem] lg:grid-cols-[1fr_26rem]">
-        <section className={cx('flex flex-col gap-4 p-4 md:p-6', selected && 'hidden md:flex')}>
-          <h1 className="text-lg font-semibold">Who&rsquo;s at the counter?</h1>
+          <div>
+            <p className="text-sm text-ink-2">
+              {data ? `${data.outlet.name} · ${data.outlet.orgName} · ${data.device.code}` : ' '}
+            </p>
+            <h1 className="mt-1 text-xl font-semibold">Who&rsquo;s working?</h1>
+          </div>
+
           {!data && roster.isPending ? <p className="text-ink-2">Loading staff…</p> : null}
           {!data && roster.isError ? (
-            <p className="text-ink-2">
-              Couldn&rsquo;t load staff. Connect to the internet once so this tablet can learn who
+            <p className="max-w-prose text-ink-2">
+              Couldn&rsquo;t load staff. Connect to the internet once so this tablet learns who
               works here.
             </p>
           ) : null}
@@ -195,121 +220,114 @@ function PinScreen() {
               {data.outlet.name}.
             </p>
           ) : null}
-          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
-            {data?.staff.map((member) => (
-              <li key={member.membershipId}>
-                <button
-                  type="button"
-                  aria-pressed={selected?.membershipId === member.membershipId}
-                  onClick={() => {
-                    choose(member);
-                  }}
-                  className={cx(
-                    'flex h-20 w-full items-center gap-3 rounded-lg border px-3 text-left',
-                    'transition-colors duration-100 active:bg-sunken',
-                    selected?.membershipId === member.membershipId
-                      ? 'border-accent bg-accent-soft'
-                      : 'border-line bg-surface',
-                  )}
-                >
-                  <span
-                    aria-hidden
-                    className="grid size-12 shrink-0 place-items-center rounded-full bg-sunken font-display text-md font-semibold text-ink-2"
+
+          <ul className="grid grid-cols-3 gap-3 sm:grid-cols-4 xl:grid-cols-5">
+            {data?.staff.map((member) => {
+              const on = selected?.membershipId === member.membershipId;
+              return (
+                <li key={member.membershipId}>
+                  <button
+                    type="button"
+                    aria-pressed={on}
+                    aria-label={`${member.name}, ${ROLE_LABEL[member.role]}`}
+                    onClick={() => {
+                      choose(member);
+                    }}
+                    className={cx(
+                      'flex w-full flex-col items-center gap-2 rounded-lg border px-2 pt-4 pb-3 text-center',
+                      'transition-colors duration-100 active:bg-sunken',
+                      on ? 'border-accent bg-accent-soft' : 'border-line bg-surface',
+                    )}
                   >
-                    {initials(member.name)}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block truncate font-medium">{member.name}</span>
-                    <span className="block text-sm text-ink-2">{ROLE_LABEL[member.role]}</span>
-                  </span>
-                </button>
-              </li>
-            ))}
+                    <Avatar name={member.name} id={member.membershipId} size={64} />
+                    <span className="line-clamp-2 text-base leading-tight font-semibold">
+                      {member.name}
+                    </span>
+                    <span className="text-sm text-ink-2">{ROLE_LABEL[member.role]}</span>
+                  </button>
+                </li>
+              );
+            })}
           </ul>
+
+          <Link to="/login" className="mt-auto text-sm text-ink-2 underline underline-offset-4">
+            Owner or manager? Sign in with email
+          </Link>
         </section>
 
         <section
+          aria-label="Enter PIN"
           className={cx(
-            'flex-col gap-4 border-line bg-surface p-4 md:flex md:border-l md:p-6',
+            'flex-col items-stretch justify-center gap-5 border-line bg-surface p-6 md:flex md:border-l md:p-8',
             selected ? 'flex' : 'hidden',
           )}
-          aria-label="Enter PIN"
         >
           {selected ? (
             <>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  aria-label="Choose someone else"
-                  className="-ml-2 w-tap px-0 md:hidden"
-                  onClick={() => {
-                    setSelected(undefined);
-                  }}
+              <Button
+                variant="ghost"
+                className="-ml-2 self-start md:hidden"
+                onClick={() => {
+                  setSelected(undefined);
+                }}
+              >
+                <Icon icon={ArrowLeft} />
+                Choose someone else
+              </Button>
+              <div className="flex flex-col items-center gap-3 text-center">
+                <Avatar name={selected.name} id={selected.membershipId} size={72} />
+                <div>
+                  <p className="text-lg font-semibold">{selected.name}</p>
+                  <p className="text-ink-2">Enter your 4-digit PIN</p>
+                </div>
+                <div
+                  key={shake}
+                  className={cx('flex h-10 items-center gap-4', shake > 0 && 'animate-shake')}
+                  aria-hidden
                 >
-                  <Icon icon={ArrowLeft} />
-                </Button>
-                <h2 className="text-md">
-                  PIN for <span className="font-semibold">{selected.name}</span>
-                </h2>
+                  {Array.from({ length: PIN_LENGTH }, (_, i) => (
+                    <span
+                      key={i}
+                      className={cx(
+                        'size-4 rounded-full border-2 transition-colors duration-100',
+                        i < pin.length ? 'border-ink bg-ink' : 'border-line-strong',
+                      )}
+                    />
+                  ))}
+                  {busy ? (
+                    <Icon
+                      icon={LoaderCircle}
+                      size={18}
+                      className="absolute ml-36 animate-spin text-ink-2"
+                    />
+                  ) : null}
+                </div>
+                <p role="alert" className="min-h-6 text-base font-medium text-danger">
+                  {message}
+                </p>
               </div>
-
-              <div className="flex h-10 items-center gap-3" aria-hidden>
-                {Array.from({ length: Math.max(4, pin.length) }, (_, i) => (
-                  <span
-                    key={i}
-                    className={cx(
-                      'size-3.5 rounded-full border-2',
-                      i < pin.length ? 'border-ink bg-ink' : 'border-line-strong',
-                    )}
-                  />
-                ))}
-                <span className="sr-only">{pin.length} digits entered</span>
-              </div>
-
-              <p role="alert" className="min-h-5 text-sm text-danger">
-                {message}
-              </p>
-
               <NumberPad
                 label={`PIN for ${selected.name}`}
                 value={pin}
-                onChange={(next) => {
-                  setPin(next);
-                  setMessage(undefined);
-                }}
-                maxLength={6}
+                onChange={type}
+                maxLength={PIN_LENGTH}
+                keepLeadingZeros
                 captureKeyboard
-                onEnter={() => void submit()}
-              />
-              <Button
-                variant="accent"
                 size="lg"
-                busy={busy}
-                disabled={pin.length < 4}
-                onClick={() => void submit()}
-              >
-                Sign in
-              </Button>
+              />
               {!online ? (
-                <p className="text-sm text-ink-2">
-                  Offline. Your PIN is checked on this tablet and bills sync when the internet is
-                  back.
+                <p className="text-center text-sm text-ink-2">
+                  Offline. Your PIN is checked on this tablet; bills sync when the internet is back.
                 </p>
               ) : null}
             </>
           ) : (
-            <p className="m-auto max-w-56 text-center text-ink-2">
-              Tap your name, then enter your PIN.
+            <p className="mx-auto max-w-56 text-center text-md text-ink-2">
+              Tap your name to sign in.
             </p>
           )}
         </section>
       </main>
-
-      <footer className="border-t border-line px-4 py-3 text-sm md:px-6">
-        <Link to="/login" className="text-ink-2 underline underline-offset-4">
-          Owner or manager? Sign in with email
-        </Link>
-      </footer>
     </div>
   );
 }

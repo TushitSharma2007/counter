@@ -12,6 +12,11 @@ describe('applyPadKey', () => {
     expect(applyPadKey('', '00')).toBe('');
   });
 
+  it('keeps leading zeros for PINs', () => {
+    expect(applyPadKey('', '0', 4, true)).toBe('0');
+    expect(applyPadKey('0', '2', 4, true)).toBe('02');
+  });
+
   it('deletes the last digit', () => {
     expect(applyPadKey('500', 'back')).toBe('50');
     expect(applyPadKey('', 'back')).toBe('');

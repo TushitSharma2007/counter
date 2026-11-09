@@ -13,9 +13,13 @@ export interface NumberPadProps {
   maxLength?: number;
   /** Show a "00" key (cash amounts). Off for PINs. */
   doubleZero?: boolean;
+  /** Keep a leading 0 (PINs). Amounts drop it. */
+  keepLeadingZeros?: boolean;
   /** Also listen to the physical keyboard (digits, Backspace, Enter). */
   captureKeyboard?: boolean;
   onEnter?: () => void;
+  /** 'lg' for the PIN screen, where the pad is the whole task. */
+  size?: 'md' | 'lg';
   className?: string;
 }
 
@@ -27,8 +31,10 @@ export function NumberPad({
   label,
   maxLength,
   doubleZero = false,
+  keepLeadingZeros = false,
   captureKeyboard = false,
   onEnter,
+  size = 'md',
   className,
 }: NumberPadProps) {
   useEffect(() => {
@@ -43,21 +49,23 @@ export function NumberPad({
       const key = padKeyFromKeyboard(event.key);
       if (key) {
         event.preventDefault();
-        onChange(applyPadKey(value, key, maxLength));
+        onChange(applyPadKey(value, key, maxLength, keepLeadingZeros));
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => {
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [captureKeyboard, value, onChange, maxLength, onEnter]);
+  }, [captureKeyboard, value, onChange, maxLength, keepLeadingZeros, onEnter]);
 
   const press = (key: PadKey) => {
-    onChange(applyPadKey(value, key, maxLength));
+    onChange(applyPadKey(value, key, maxLength, keepLeadingZeros));
   };
 
-  const keyClass =
-    'flex h-16 items-center justify-center bg-surface text-xl font-medium num select-none active:bg-sunken transition-colors duration-100';
+  const keyClass = cx(
+    'flex items-center justify-center bg-surface font-medium num select-none active:bg-sunken transition-colors duration-100',
+    size === 'lg' ? 'h-[72px] text-2xl' : 'h-16 text-xl',
+  );
 
   return (
     <div

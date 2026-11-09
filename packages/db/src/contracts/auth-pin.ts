@@ -6,7 +6,7 @@ export const PinLoginRequest = z.object({
   deviceId: z.uuid(),
   deviceSecret: z.string().regex(/^[0-9a-f]{64}$/),
   membershipId: z.uuid(),
-  pin: z.string().regex(/^[0-9]{4,6}$/),
+  pin: z.string().regex(/^[0-9]{4}$/),
 });
 export type PinLoginRequest = z.infer<typeof PinLoginRequest>;
 
