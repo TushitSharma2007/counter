@@ -194,6 +194,8 @@ export async function ensurePersonalDevice(
 
 export interface Me {
   userId: string;
+  /** Their owner (or else manager) membership, for bills and voids made on their own phone. */
+  membershipId: string;
   name: string;
   /** The most senior role across this person's orgs. */
   role: 'owner' | 'manager';
@@ -210,7 +212,7 @@ export async function getMe(db: Db): Promise<Me | undefined> {
       db.from('profiles').select('full_name').eq('id', userId).maybeSingle(),
       db
         .from('memberships')
-        .select('role')
+        .select('id, role')
         .eq('user_id', userId)
         .eq('is_active', true)
         .in('role', ['owner', 'manager']),
@@ -219,9 +221,12 @@ export async function getMe(db: Db): Promise<Me | undefined> {
   if (membershipError) throw membershipError;
   if (!profile || memberships.length === 0) return undefined;
 
+  const senior = memberships.find((m) => m.role === 'owner') ?? memberships[0];
+  if (!senior) return undefined;
   return {
     userId,
+    membershipId: senior.id,
     name: profile.full_name,
-    role: memberships.some((m) => m.role === 'owner') ? 'owner' : 'manager',
+    role: senior.role === 'owner' ? 'owner' : 'manager',
   };
 }

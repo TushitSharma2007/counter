@@ -43,7 +43,15 @@ function Counter() {
     <BillingScreen
       outletId={roster?.outlet.id ?? device.outletId}
       outletName={roster?.outlet.name ?? ''}
-      deviceCode={roster?.device.code ?? ''}
+      device={{
+        id: device.deviceId,
+        code: roster?.device.code ?? device.code,
+        secret: device.secret,
+      }}
+      billedBy={{ membershipId: actor.membershipId, name: actor.name }}
+      approvers={(roster?.staff ?? [])
+        .filter((s) => s.role === 'manager')
+        .map((s) => ({ membershipId: s.membershipId, name: s.name, pinHash: s.pinHash }))}
       staff={{ id: actor.membershipId, name: actor.name, role: actor.role }}
       endAction={{ label: 'Lock', icon: Lock, onClick: () => void lock() }}
       banner={

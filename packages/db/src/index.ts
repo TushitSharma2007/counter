@@ -33,6 +33,7 @@ export {
   saveItem,
   saveModifierGroup,
   setOutletOverride,
+  type BillingContext,
   type FoodType,
   type Menu,
   type MenuCategory,
@@ -67,3 +68,11 @@ export {
   type SyncStatus,
   type VoidRequest,
 } from './outbox.ts';
+export {
+  fetchBusinessDetails,
+  fetchOutletDetails,
+  updateBusinessDetails,
+  updateOutletDetails,
+  type BusinessDetails,
+  type OutletDetails,
+} from './settings.ts';

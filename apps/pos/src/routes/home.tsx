@@ -4,14 +4,18 @@ import { Avatar, cx, Icon, StatusPill } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router';
 import {
+  Building2,
   ChartNoAxesColumn,
   ChevronRight,
   LogOut,
+  Settings2,
   Tablet,
   Users,
   UtensilsCrossed,
 } from 'lucide-react';
+import { useState } from 'react';
 import { db } from '../lib/db.ts';
+import { BusinessSheet, OutletSheet } from '../settings/SettingsSheets.tsx';
 import { loadDevice } from '../lib/device.ts';
 import { forgetPersonal, lastOutlet } from '../lib/personal.ts';
 
@@ -34,6 +38,9 @@ function Home() {
     queryFn: () => listManagedOutlets(db),
   });
   const last = lastOutlet();
+
+  const [outletDetails, setOutletDetails] = useState<string>();
+  const [businessOpen, setBusinessOpen] = useState(false);
 
   const leave = async () => {
     forgetPersonal();
@@ -91,11 +98,11 @@ function Home() {
             </li>
           ) : null}
           {outlets.data?.map((outlet) => (
-            <li key={outlet.id} className="border-b border-line last:border-0">
+            <li key={outlet.id} className="flex items-center border-b border-line last:border-0">
               <Link
                 to="/bill/$outletId"
                 params={{ outletId: outlet.id }}
-                className={cx('flex h-20 items-center gap-4 px-4 active:bg-sunken')}
+                className={cx('flex h-20 min-w-0 flex-1 items-center gap-4 px-4 active:bg-sunken')}
               >
                 <span className="num grid size-11 place-items-center rounded-md bg-ink text-sm font-semibold text-canvas">
                   {outlet.code}
@@ -113,12 +120,42 @@ function Home() {
                 </div>
                 <Icon icon={ChevronRight} className="text-ink-2" />
               </Link>
+              {me.data?.role === 'owner' ? (
+                <button
+                  type="button"
+                  aria-label={`Details of ${outlet.name}`}
+                  onClick={() => {
+                    setOutletDetails(outlet.id);
+                  }}
+                  className="mr-2 grid size-12 shrink-0 place-items-center rounded-md text-ink-2 active:bg-sunken"
+                >
+                  <Icon icon={Settings2} size={20} />
+                </button>
+              ) : null}
             </li>
           ))}
         </ul>
 
         <div>
           <h2 className="mb-2 text-sm font-medium tracking-wide text-ink-2 uppercase">Manage</h2>
+          {me.data?.role === 'owner' ? (
+            <button
+              type="button"
+              onClick={() => {
+                setBusinessOpen(true);
+              }}
+              className="mb-2 flex h-20 w-full items-center gap-4 rounded-lg border border-line bg-surface px-4 text-left active:bg-sunken"
+            >
+              <span className="grid size-11 place-items-center rounded-md bg-sunken text-ink-2">
+                <Icon icon={Building2} size={22} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-md font-semibold">Business details</p>
+                <p className="text-sm text-ink-2">Name, GSTIN and GST scheme on your bills</p>
+              </div>
+              <Icon icon={ChevronRight} className="text-ink-2" />
+            </button>
+          ) : null}
           <Link
             to="/menu"
             className="flex h-20 items-center gap-4 rounded-lg border border-line bg-surface px-4 active:bg-sunken"
@@ -172,6 +209,19 @@ function Home() {
           </div>
         </section>
       </main>
+      <OutletSheet
+        outletId={outletDetails}
+        onClose={() => {
+          setOutletDetails(undefined);
+        }}
+      />
+      <BusinessSheet
+        orgId={outlets.data?.[0]?.orgId}
+        open={businessOpen}
+        onClose={() => {
+          setBusinessOpen(false);
+        }}
+      />
     </div>
   );
 }

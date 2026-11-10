@@ -37,6 +37,8 @@
   --color-veg: var(--veg);
   --color-nonveg: var(--nonveg);
   --color-egg: var(--egg);
+  --color-receipt: var(--receipt);
+  --color-receipt-ink: var(--receipt-ink);
 
   --font-*: initial;
   --font-ui: var(--font-ui);

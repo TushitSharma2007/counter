@@ -48,6 +48,10 @@
   --nonveg: #8a3b12;
   --egg: #b07a00;
 
+  /* Printed receipts: thermal paper is black on white, whatever the screen theme */
+  --receipt: #ffffff;
+  --receipt-ink: #000000;
+
   /* Staff avatars: muted, told apart at a glance, never used for state */
   --avatar-1: #c9a27e;
   --avatar-2: #9fb3a0;

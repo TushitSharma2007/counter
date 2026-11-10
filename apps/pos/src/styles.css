@@ -1,2 +1,27 @@
 @import 'tailwindcss';
 @import '@repo/ui/theme.css';
+
+/* Printing: only the receipt in #print-root, on thermal paper with no margins. */
+#print-root {
+  display: none;
+}
+
+@media print {
+  @page {
+    margin: 0;
+    size: auto;
+  }
+
+  body > *:not(#print-root) {
+    display: none !important;
+  }
+
+  #print-root {
+    display: block !important;
+  }
+
+  html,
+  body {
+    background: var(--receipt) !important;
+  }
+}

@@ -1,12 +1,14 @@
 import { brand } from '@repo/config/brand';
 import { Avatar, cx, Icon, SyncIndicator } from '@repo/ui';
-import { PauseCircle, Search, X, type LucideIcon } from 'lucide-react';
+import { PauseCircle, ReceiptText, Search, X, type LucideIcon } from 'lucide-react';
+import type { SyncView } from '../billing/sync.ts';
 import type { RefObject } from 'react';
 
 export interface TopBarProps {
   outletName: string;
   deviceCode: string;
-  online: boolean;
+  sync: SyncView;
+  onOpenBills: () => void;
   search: string;
   onSearch: (value: string) => void;
   onSearchEnter: () => void;
@@ -22,7 +24,8 @@ export interface TopBarProps {
 export function TopBar({
   outletName,
   deviceCode,
-  online,
+  sync,
+  onOpenBills,
   search,
   onSearch,
   onSearchEnter,
@@ -78,10 +81,38 @@ export function TopBar({
       </label>
 
       <div className="ml-auto flex items-center gap-1.5">
-        <SyncIndicator
-          state={online ? 'live' : 'offline'}
-          className={cx('hidden sm:inline-flex', online && '!text-canvas/80')}
-        />
+        <button
+          type="button"
+          onClick={sync.kick}
+          aria-label="Sync now"
+          className="hidden rounded-full sm:inline-flex"
+        >
+          <SyncIndicator
+            state={sync.state}
+            queued={sync.queued}
+            className={cx(sync.state !== 'offline' && '!text-canvas/80')}
+          />
+        </button>
+        <button
+          type="button"
+          onClick={onOpenBills}
+          className="relative flex h-11 items-center gap-2 rounded-md px-3 text-sm font-medium text-canvas/90 active:bg-canvas/10"
+        >
+          <Icon icon={ReceiptText} size={18} />
+          <span className="hidden sm:inline">Bills</span>
+          {sync.failed > 0 ? (
+            <span
+              aria-label={`${sync.failed} need attention`}
+              className="num grid h-5 min-w-5 place-items-center rounded-full bg-danger px-1 text-xs font-semibold text-canvas"
+            >
+              {sync.failed}
+            </span>
+          ) : sync.queued > 0 ? (
+            <span className="num grid h-5 min-w-5 place-items-center rounded-full bg-warning px-1 text-xs font-semibold text-ink sm:hidden">
+              {sync.queued}
+            </span>
+          ) : null}
+        </button>
         <button
           type="button"
           onClick={onOpenHeld}

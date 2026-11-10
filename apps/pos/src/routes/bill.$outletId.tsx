@@ -77,7 +77,10 @@ function PersonalBilling() {
     <BillingScreen
       outletId={outletId}
       outletName={outlet?.name ?? cachedPersonalDevice(outletId)?.outletName ?? ''}
-      deviceCode={device.data.code}
+      device={{ id: device.data.deviceId, code: device.data.code }}
+      billedBy={{ membershipId: me.data.membershipId, name: me.data.name }}
+      approvers={[]}
+      selfApprover={{ membershipId: me.data.membershipId, name: me.data.name }}
       staff={{ id: me.data.userId, name: me.data.name, role: me.data.role }}
       endAction={{ label: 'Outlets', icon: Store, onClick: back }}
     />

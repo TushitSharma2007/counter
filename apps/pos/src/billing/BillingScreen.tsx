@@ -2,7 +2,12 @@ import { Button, formatINR, Sheet, SheetContent, toast } from '@repo/ui';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { TopBar, type TopBarProps } from '../components/TopBar.tsx';
 import type { Menu, MenuItem } from '@repo/db';
-import { useOnline } from '../lib/online.ts';
+import { buildOrder, financialYear, DEFAULT_TAX, type OrderPayload } from '@repo/pos-core';
+import type { StoredBill } from '@repo/db';
+import { BillsSheet } from './BillsSheet.tsx';
+import { PaidSheet } from './PaidSheet.tsx';
+import { outbox, useSync } from './sync.ts';
+import type { Approver } from './VoidDialog.tsx';
 import { BillPanel } from './BillPanel.tsx';
 import { HeldSheet } from './HeldSheet.tsx';
 import { needsSize, searchItems, useMenu } from './menu-data.ts';
@@ -11,17 +16,17 @@ import { OptionsDialog, type OptionsChoice } from './OptionsDialog.tsx';
 import { PayDialog, type Payment } from './PayDialog.tsx';
 import { useBilling } from './state.ts';
 
-const PAID_AS: Record<Payment['mode'], string> = {
-  cash: 'cash',
-  upi: 'UPI',
-  card: 'card',
-  due: 'khata',
-};
-
 export interface BillingScreenProps {
   outletId: string;
   outletName: string;
-  deviceCode: string;
+  /** This device's counter: a shared tablet (with its key) or the owner's own phone at this outlet. */
+  device: { id: string; code: string; secret?: string };
+  /** Recorded on every bill. */
+  billedBy: OrderPayload['billedBy'];
+  /** Managers who can approve a void here with their PIN (shared tablets). */
+  approvers: Approver[];
+  /** On an owner's or manager's own phone, they approve voids themselves. */
+  selfApprover?: Approver;
   /** Who is billing: the PIN-signed-in staff member, or the owner on their own phone. */
   staff: { id: string; name: string; role: string };
   /** Lock (shared tablet) or Outlets (owner's phone). */
@@ -50,14 +55,30 @@ export function BillingScreen(props: BillingScreenProps) {
 
 function Billing({
   outletName,
-  deviceCode,
+  device,
+  billedBy,
+  approvers,
+  selfApprover,
   staff,
   endAction,
   banner,
   menu,
 }: BillingScreenProps & { menu: Menu }) {
-  const online = useOnline();
-  const { cart, dispatch, totals, count, held, hold, resume } = useBilling();
+  const context = menu.billing;
+  const tax = context
+    ? {
+        ...DEFAULT_TAX,
+        gstScheme: context.org.gstScheme,
+        pricesIncludeTax: context.org.pricesIncludeTax,
+      }
+    : DEFAULT_TAX;
+  const sync = useSync({
+    deviceId: device.id,
+    ...(device.secret ? { secret: device.secret } : {}),
+  });
+  const { cart, dispatch, totals, count, held, hold, resume } = useBilling(tax);
+  const [paidBill, setPaidBill] = useState<StoredBill>();
+  const [billsOpen, setBillsOpen] = useState(false);
 
   const [category, setCategory] = useState(ALL);
   const [search, setSearch] = useState('');
@@ -116,7 +137,13 @@ function Billing({
   };
 
   // Keyboard: "/" finds an item, Enter adds the top result (or opens Pay when not searching).
-  const overlayOpen = paying || heldOpen || billOpen || optionsFor !== undefined;
+  const overlayOpen =
+    paying ||
+    heldOpen ||
+    billOpen ||
+    billsOpen ||
+    paidBill !== undefined ||
+    optionsFor !== undefined;
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (overlayOpen) return;
@@ -141,17 +168,32 @@ function Billing({
     setSearch('');
   };
 
-  const paid = (payment: Payment) => {
-    const change =
-      payment.tenderedPaise !== undefined ? payment.tenderedPaise - totals.totalPaise : 0;
-    toast({
-      title: 'Bill paid',
-      description: `${formatINR(totals.totalPaise)} by ${PAID_AS[payment.mode]}${change > 0 ? ` · return ${formatINR(change)}` : ''}`,
-      tone: 'success',
-    });
+  // Paid: number the bill on this device and queue it, in one step. It syncs in the background.
+  const paid = async (payment: Payment) => {
+    if (!context) return;
+    const now = new Date().toISOString();
+    const stored = await outbox.addBill(device.id, financialYear(now), (seq) =>
+      buildOrder({
+        cart,
+        totals,
+        tax,
+        payment: {
+          mode: payment.mode,
+          ...(payment.tenderedPaise !== undefined ? { tenderedPaise: payment.tenderedPaise } : {}),
+        },
+        device: { id: device.id, code: device.code },
+        outlet: { id: context.outlet.id, code: context.outlet.code },
+        billedBy,
+        seq,
+        now,
+        dayCloseHour: context.org.dayCloseHour,
+      }),
+    );
     setPaying(false);
     setBillOpen(false);
     dispatch({ type: 'clear' });
+    setPaidBill(stored);
+    sync.kick();
   };
 
   const panel = (className: string, showTitle = true) => (
@@ -177,8 +219,11 @@ function Billing({
     <div className="flex h-dvh flex-col overflow-hidden bg-canvas">
       <TopBar
         outletName={outletName}
-        deviceCode={deviceCode}
-        online={online}
+        deviceCode={device.code}
+        sync={sync}
+        onOpenBills={() => {
+          setBillsOpen(true);
+        }}
         search={search}
         onSearch={setSearch}
         onSearchEnter={addTopResult}
@@ -257,11 +302,38 @@ function Billing({
         totalPaise={totals.totalPaise}
         initialMode={cart.paymentMode}
         customerPhone={cart.customerPhone}
+        upi={
+          context?.outlet.upiVpa
+            ? { vpa: context.outlet.upiVpa, payeeName: context.org.name }
+            : undefined
+        }
         onClose={() => {
           setPaying(false);
         }}
-        onPaid={paid}
+        onPaid={(p) => void paid(p)}
       />
+      {context ? (
+        <>
+          <PaidSheet
+            bill={paidBill}
+            context={context}
+            onNext={() => {
+              setPaidBill(undefined);
+            }}
+          />
+          <BillsSheet
+            open={billsOpen}
+            deviceId={device.id}
+            context={context}
+            approvers={approvers}
+            {...(selfApprover ? { self: selfApprover } : {})}
+            onClose={() => {
+              setBillsOpen(false);
+            }}
+            onChanged={sync.kick}
+          />
+        </>
+      ) : null}
       <HeldSheet
         open={heldOpen}
         held={held}

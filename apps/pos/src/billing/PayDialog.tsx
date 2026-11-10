@@ -11,6 +11,7 @@ import {
 } from '@repo/ui';
 import { useState } from 'react';
 import { PAYMENT_MODES } from './options.ts';
+import { UpiQr } from './UpiQr.tsx';
 
 export interface Payment {
   mode: Exclude<PaymentMode, 'split'>;
@@ -29,6 +30,7 @@ export function PayDialog({
   totalPaise,
   initialMode,
   customerPhone,
+  upi,
   onClose,
   onPaid,
 }: {
@@ -36,6 +38,8 @@ export function PayDialog({
   totalPaise: number;
   initialMode: PaymentMode;
   customerPhone: string;
+  /** The outlet's UPI ID and the name customers see; undefined when not set up. */
+  upi: { vpa: string; payeeName: string } | undefined;
   onClose: () => void;
   onPaid: (payment: Payment) => void;
 }) {
@@ -51,6 +55,7 @@ export function PayDialog({
           totalPaise={totalPaise}
           initialMode={initialMode === 'split' ? 'cash' : initialMode}
           customerPhone={customerPhone}
+          upi={upi}
           onPaid={onPaid}
         />
       ) : null}
@@ -62,11 +67,13 @@ function PayBody({
   totalPaise,
   initialMode,
   customerPhone,
+  upi,
   onPaid,
 }: {
   totalPaise: number;
   initialMode: Payment['mode'];
   customerPhone: string;
+  upi: { vpa: string; payeeName: string } | undefined;
   onPaid: (payment: Payment) => void;
 }) {
   const [mode, setMode] = useState(initialMode);
@@ -159,10 +166,18 @@ function PayBody({
           </div>
         ) : null}
 
-        {mode === 'upi' ? (
+        {mode === 'upi' && upi ? (
+          <UpiQr
+            vpa={upi.vpa}
+            payeeName={upi.payeeName}
+            amountPaise={totalPaise}
+            note={`${upi.payeeName} bill`}
+          />
+        ) : null}
+        {mode === 'upi' && !upi ? (
           <p className="rounded-md bg-sunken p-4 text-base">
-            Ask the customer to pay {formatINR(totalPaise)} by UPI. Confirm once the payment shows
-            on your phone.
+            Ask the customer to pay {formatINR(totalPaise)} by UPI, then confirm. To show a QR with
+            the amount filled in, the owner adds this outlet&rsquo;s UPI ID in My outlets.
           </p>
         ) : null}
         {mode === 'card' ? (

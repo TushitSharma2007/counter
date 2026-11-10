@@ -53,6 +53,12 @@ test('bill a takeaway order and take cash', async ({ page }, info) => {
   await page.screenshot({ path: shot('billing-pay', project) });
   await pay.getByRole('button', { name: 'Bill paid' }).click();
 
-  await expect(page.getByText('Bill paid', { exact: true })).toBeVisible();
-  await expect(page.getByText(/^₹(356|405) by cash · return ₹(144|95)$/)).toBeVisible();
+  // The bill is numbered on this device and the change is shown big.
+  const paid = page.getByRole('dialog', { name: 'Bill paid' });
+  await expect(paid).toContainText(/ARC-T\d+\/\d{4}\/000001/);
+  await expect(paid.getByText('Change to return')).toBeVisible();
+  await expect(paid).toContainText(/₹(144|95)/);
+  await page.screenshot({ path: shot('billing-paid', project) });
+  await paid.getByRole('button', { name: 'New bill' }).click();
+  await expect(paid).toBeHidden();
 });

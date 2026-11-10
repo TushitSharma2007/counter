@@ -50,11 +50,32 @@ export interface MenuItem {
   modifierGroupIds: string[];
 }
 
+/** What a bill and its receipt need about the outlet and the business. */
+export interface BillingContext {
+  outlet: {
+    id: string;
+    name: string;
+    code: string;
+    address: string | null;
+    city: string | null;
+    upiVpa: string | null;
+  };
+  org: {
+    name: string;
+    gstin: string | null;
+    gstScheme: 'regular' | 'composition';
+    pricesIncludeTax: boolean;
+    dayCloseHour: number;
+  };
+}
+
 export interface Menu {
   orgId: string;
   categories: MenuCategory[];
   items: MenuItem[];
   modifierGroups: Record<string, MenuModifierGroup>;
+  /** With an outlet: its details and the business's tax settings, cached with the menu for offline. */
+  billing?: BillingContext;
 }
 
 export interface OutletOverride {
@@ -79,10 +100,34 @@ export async function fetchMenu(
   }: { outletId?: string; orgId?: string; includeInactive?: boolean },
 ): Promise<Menu> {
   let orgId = givenOrg;
-  if (!orgId && outletId) {
-    const { data, error } = await db.from('outlets').select('org_id').eq('id', outletId).single();
+  let billing: BillingContext | undefined;
+  if (outletId) {
+    const { data, error } = await db
+      .from('outlets')
+      .select(
+        'id, org_id, name, code, address, city, upi_vpa, orgs (name, gstin, gst_scheme, prices_include_tax, day_close_hour)',
+      )
+      .eq('id', outletId)
+      .single();
     if (error) throw error;
-    orgId = data.org_id;
+    orgId ??= data.org_id;
+    billing = {
+      outlet: {
+        id: data.id,
+        name: data.name,
+        code: data.code,
+        address: data.address,
+        city: data.city,
+        upiVpa: data.upi_vpa,
+      },
+      org: {
+        name: data.orgs.name,
+        gstin: data.orgs.gstin,
+        gstScheme: data.orgs.gst_scheme === 'composition' ? 'composition' : 'regular',
+        pricesIncludeTax: data.orgs.prices_include_tax,
+        dayCloseHour: data.orgs.day_close_hour,
+      },
+    };
   }
   if (!orgId) throw new Error('fetchMenu needs an outlet or an org');
 
@@ -125,6 +170,7 @@ export async function fetchMenu(
 
   return {
     orgId,
+    ...(billing ? { billing } : {}),
     categories: (categories.data ?? []).map((c) => ({
       id: c.id,
       name: c.name,

@@ -2,7 +2,7 @@
 // amount filled in. Nothing tells us the money arrived, so the cashier confirms by hand.
 import type { PaymentAdapter, PaymentRequest } from '../adapter.ts';
 
-const VPA = /^[A-Za-z0-9._-]{2,256}@[A-Za-z]{2,64}$/;
+const VPA = /^[A-Za-z0-9._-]{2,255}@[A-Za-z]{2,64}$/; // same rule as outlets_upi_vpa_check
 
 export function isValidVpa(vpa: string): boolean {
   return VPA.test(vpa.trim());

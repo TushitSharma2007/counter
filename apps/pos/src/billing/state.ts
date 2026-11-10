@@ -8,6 +8,7 @@ import {
   itemCount,
   type Cart,
   type CartAction,
+  type TaxSettings,
 } from '@repo/pos-core';
 import { useMemo, useReducer, useState } from 'react';
 
@@ -17,11 +18,11 @@ export interface HeldBill {
   heldAt: Date;
 }
 
-export function useBilling() {
+export function useBilling(tax: TaxSettings = DEFAULT_TAX) {
   const [cart, dispatch] = useReducer(cartReducer, EMPTY_CART);
   const [held, setHeld] = useState<HeldBill[]>([]);
 
-  const totals = useMemo(() => computeBill(cart.lines, DEFAULT_TAX), [cart.lines]);
+  const totals = useMemo(() => computeBill(cart.lines, tax), [cart.lines, tax]);
   const count = itemCount(cart);
 
   const hold = () => {

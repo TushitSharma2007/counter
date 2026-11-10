@@ -346,6 +346,8 @@ Decided 2026-11-04, after the first doc review. The sections above already refle
 | Only owners add, edit or switch off staff; managers reset PINs of cashiers and kitchen staff at their own outlets and pair/revoke tablets there | Least privilege; managers run the floor, owners run the business |
 | New staff logins come from the `staff-create` edge function, which then calls `add_staff` as the owner; PIN-only staff get an unmailable `@staff.invalid` address | Only the server can create logins, but the database still decides who may add staff |
 | No item photos anywhere in the app | Owner decision: menus are text, codes and food marks; keeps the app light and fast |
+| Bills sync with the device's own credential (counter tablet key, or the owner's login on a personal phone), not the cashier's session | A cashier who signed in offline has no session, but their bills must still sync |
+| Voids are approved with a manager's PIN checked on the device (offline-capable); the server checks the approver manages that outlet and writes the audit log | Voids must work at a busy counter with no internet |
 | Short dedicated stamp-link domain for `/s/` and `/q/` only | It's baked into tags; the brand domain can change |
 
 **Still open:** kiosk GSTIN, stamp-link domain (placeholder in config), NFC reader model (RC522 or PN532).
