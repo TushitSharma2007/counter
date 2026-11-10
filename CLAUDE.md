@@ -343,6 +343,9 @@ Decided 2026-11-04, after the first doc review. The sections above already refle
 | An owner's own phone is also a counter at whichever outlet they are at (personal devices) | Owner request: walk into any outlet, sign in once, bill from the phone |
 | Menu: everyone reads, only owners change items and prices, managers set sold out / outlet prices at their outlets; items and categories are switched off, never deleted | Cashiers bill from it; past bills keep their history |
 | Menu tables use composite foreign keys `(id, org_id)` | The database itself stops a row pointing at another tenant's data |
+| Counter tablets are added with a one-time 8-character pairing code (10 minutes, single use); the owner's password never goes on a tablet | Owner signs in on their own phone, types nothing secret on shared hardware |
+| Only owners add, edit or switch off staff; managers reset PINs of cashiers and kitchen staff at their own outlets and pair/revoke tablets there | Least privilege; managers run the floor, owners run the business |
+| New staff logins come from the `staff-create` edge function, which then calls `add_staff` as the owner; PIN-only staff get an unmailable `@staff.invalid` address | Only the server can create logins, but the database still decides who may add staff |
 | Short dedicated stamp-link domain for `/s/` and `/q/` only | It's baked into tags; the brand domain can change |
 
 **Still open:** kiosk GSTIN, stamp-link domain (placeholder in config), NFC reader model (RC522 or PN532).

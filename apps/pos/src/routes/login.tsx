@@ -1,7 +1,7 @@
 import { brand } from '@repo/config/brand';
 import { signInWithPassword } from '@repo/db';
 import { Button, Icon, Input } from '@repo/ui';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { ChartNoAxesColumn, ChefHat, ReceiptText } from 'lucide-react';
 import { useState } from 'react';
 import { db } from '../lib/db.ts';
@@ -96,6 +96,13 @@ function Login() {
               Sign in
             </Button>
           </form>
+
+          <Link
+            to="/pair"
+            className="flex h-12 items-center justify-center rounded-md border border-line-strong text-base font-medium active:bg-sunken"
+          >
+            Setting up a counter tablet? Use a pairing code
+          </Link>
 
           <p className="border-t border-line pt-4 text-sm text-ink-2 md:hidden">
             Counter staff sign in with their PIN on the outlet&rsquo;s tablet.

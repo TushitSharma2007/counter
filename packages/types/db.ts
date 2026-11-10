@@ -25,6 +25,38 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"device_pairings": {
+                  Row: {
+                    "code_hash": string,"created_at": string,"created_by": string | null,"device_id": string | null,"expires_at": string,"id": string,"label": string,"org_id": string,"outlet_id": string,"used_at": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "code_hash": string,"created_at"?: string,"created_by"?: string | null,"device_id"?: string | null,"expires_at": string,"id"?: string,"label": string,"org_id": string,"outlet_id": string,"used_at"?: string | null
+                  }
+                  Update: {
+                    "code_hash"?: string,"created_at"?: string,"created_by"?: string | null,"device_id"?: string | null,"expires_at"?: string,"id"?: string,"label"?: string,"org_id"?: string,"outlet_id"?: string,"used_at"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "device_pairings_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "device_pairings_device_id_fkey"
+      columns: ["device_id"]
+isOneToOne: false
+      referencedRelation: "devices"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "device_pairings_outlet_id_org_id_fkey"
+      columns: ["outlet_id","org_id"]
+isOneToOne: false
+      referencedRelation: "outlets"
+      referencedColumns: ["id","org_id"]
+    }
+                  ]
                 },"devices": {
                   Row: {
                     "code": string,"created_at": string,"created_by": string | null,"id": string,"kind": string,"label": string,"last_seen_at": string | null,"org_id": string,"outlet_id": string,"revoked_at": string | null,"secret_hash": string | null,"user_id": string | null
@@ -307,7 +339,13 @@ isOneToOne: true
             [_ in never]: never
           }
           Functions: {
-            "device_roster":
+            "add_staff":
+{ Args: { "p": Json }; Returns: string
+                           },
+"create_pairing_code":
+{ Args: { "p_label": string,"p_outlet_id": string }; Returns: Json
+                           },
+"device_roster":
 { Args: { "p_device_id": string,"p_secret": string }; Returns: Json
                            },
 "ensure_personal_device":
@@ -315,6 +353,12 @@ isOneToOne: true
                            },
 "health":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"list_staff":
+{ Args: { "p_org_id": string }; Returns: Json
+                           },
+"pair_device":
+{ Args: { "p_code": string }; Returns: Json
                            },
 "register_device":
 { Args: { "p_label": string,"p_outlet_id": string }; Returns: Json
@@ -330,6 +374,9 @@ isOneToOne: true
                            },
 "set_staff_pin":
 { Args: { "p_membership_id": string,"p_pin": string }; Returns: undefined
+                           },
+"update_staff":
+{ Args: { "p": Json }; Returns: undefined
                            },
 "verify_staff_pin":
 { Args: { "p_device_id": string,"p_membership_id": string,"p_pin": string,"p_secret": string }; Returns: Json

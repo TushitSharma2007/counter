@@ -42,3 +42,19 @@ export {
   type MenuVariant,
   type OutletOverride,
 } from './menu.ts';
+export { STAFF_ROLES, StaffCreateRequest, StaffCreateResponse } from './contracts/staff.ts';
+export {
+  createPairingCode,
+  createStaff,
+  formatPairingCode,
+  FriendlyError,
+  listDevices,
+  listStaff,
+  pairDevice,
+  PairingCode,
+  revokeDevice,
+  setStaffPin,
+  StaffMember,
+  updateStaff,
+  type DeviceRow,
+} from './staff.ts';

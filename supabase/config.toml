@@ -424,3 +424,7 @@ enabled = true
 # Called by counter devices before anyone is signed in; the device secret is the credential.
 [functions.auth-pin]
 verify_jwt = false
+
+# Checks the caller itself (getUser on their token) and then acts as them.
+[functions.staff-create]
+verify_jwt = false
