@@ -5,6 +5,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { ChartNoAxesColumn, ChefHat, ReceiptText } from 'lucide-react';
 import { useState } from 'react';
 import { db } from '../lib/db.ts';
+import { loadDevice } from '../lib/device.ts';
 
 export const Route = createFileRoute('/login')({
   component: Login,
@@ -28,7 +29,8 @@ function Login() {
     setError(undefined);
     const result = await signInWithPassword(db, email.trim(), password);
     setBusy(false);
-    if (result.ok) await navigate({ to: '/device/setup' });
+    // On a shared counter tablet an owner only manages the device; anywhere else this is their phone.
+    if (result.ok) await navigate({ to: loadDevice() ? '/device/setup' : '/home' });
     else setError(result.message);
   };
 

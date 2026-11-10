@@ -2,12 +2,19 @@ import { expect, type Page } from '@playwright/test';
 
 export const shot = (name: string, project: string) => `screenshots/${name}-${project}.png`;
 
-/** Owner signs in and registers this browser as a counter tablet at Arera Colony. */
-export async function registerTablet(page: Page) {
+/** Owner signs in on their own phone and lands on My outlets. */
+export async function ownerSignIn(page: Page) {
   await page.goto('/login');
   await page.getByLabel('Email').fill('owner@demo-coffee.test');
   await page.getByLabel('Password').fill('demo-owner-2026');
   await page.getByRole('button', { name: 'Sign in' }).click();
+  await expect(page).toHaveURL(/\/home$/);
+}
+
+/** Owner signs in and registers this browser as a shared counter tablet at Arera Colony. */
+export async function registerTablet(page: Page) {
+  await ownerSignIn(page);
+  await page.getByRole('link', { name: 'Set up this device as a shared counter' }).click();
   await expect(page).toHaveURL(/\/device\/setup$/);
   await page.getByRole('radio', { name: /Arera Colony/ }).check();
   await page.getByRole('button', { name: 'Register device' }).click();

@@ -7,14 +7,14 @@ export type Database = {
           Tables: {
             "devices": {
                   Row: {
-                    "code": string,"created_at": string,"created_by": string | null,"id": string,"label": string,"last_seen_at": string | null,"org_id": string,"outlet_id": string,"revoked_at": string | null,"secret_hash": string
+                    "code": string,"created_at": string,"created_by": string | null,"id": string,"kind": string,"label": string,"last_seen_at": string | null,"org_id": string,"outlet_id": string,"revoked_at": string | null,"secret_hash": string | null,"user_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "code": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"label": string,"last_seen_at"?: string | null,"org_id": string,"outlet_id": string,"revoked_at"?: string | null,"secret_hash": string
+                    "code": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"kind"?: string,"label": string,"last_seen_at"?: string | null,"org_id": string,"outlet_id": string,"revoked_at"?: string | null,"secret_hash"?: string | null,"user_id"?: string | null
                   }
                   Update: {
-                    "code"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"label"?: string,"last_seen_at"?: string | null,"org_id"?: string,"outlet_id"?: string,"revoked_at"?: string | null,"secret_hash"?: string
+                    "code"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"kind"?: string,"label"?: string,"last_seen_at"?: string | null,"org_id"?: string,"outlet_id"?: string,"revoked_at"?: string | null,"secret_hash"?: string | null,"user_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -34,6 +34,12 @@ isOneToOne: false
       columns: ["outlet_id"]
 isOneToOne: false
       referencedRelation: "outlets"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "devices_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
       referencedColumns: ["id"]
     }
                   ]
@@ -139,6 +145,9 @@ isOneToOne: true
           Functions: {
             "device_roster":
 { Args: { "p_device_id": string,"p_secret": string }; Returns: Json
+                           },
+"ensure_personal_device":
+{ Args: { "p_label": string,"p_outlet_id": string }; Returns: Json
                            },
 "health":
 { Args: Record<PropertyKey, never>; Returns: Json

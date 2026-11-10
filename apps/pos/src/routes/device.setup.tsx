@@ -1,10 +1,11 @@
 import { listManagedOutlets, registerDevice, signOut } from '@repo/db';
 import { Button, cx, Input } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
-import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { db } from '../lib/db.ts';
-import { saveDevice } from '../lib/device.ts';
+import { loadDevice, saveDevice } from '../lib/device.ts';
+import { forgetPersonal } from '../lib/personal.ts';
 
 export const Route = createFileRoute('/device/setup')({
   beforeLoad: async () => {
@@ -33,6 +34,7 @@ function DeviceSetup() {
     setError(undefined);
     try {
       saveDevice(await registerDevice(db, chosen, label.trim() || 'Counter tablet'));
+      forgetPersonal(); // a shared tablet is nobody's personal phone
       // A shared counter device must never stay signed in as the owner.
       await signOut(db);
       await navigate({ to: '/pin' });
@@ -43,6 +45,7 @@ function DeviceSetup() {
   };
 
   const leave = async () => {
+    forgetPersonal();
     await signOut(db);
     await navigate({ to: '/login' });
   };
@@ -112,9 +115,15 @@ function DeviceSetup() {
         >
           Register device
         </Button>
-        <Button variant="ghost" onClick={() => void leave()}>
-          Sign out
-        </Button>
+        {loadDevice() ? (
+          <Button variant="ghost" onClick={() => void leave()}>
+            Sign out
+          </Button>
+        ) : (
+          <Button asChild variant="ghost">
+            <Link to="/home">This is my own phone — back to my outlets</Link>
+          </Button>
+        )}
       </div>
     </main>
   );

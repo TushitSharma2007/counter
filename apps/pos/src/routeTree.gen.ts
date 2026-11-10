@@ -11,9 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CounterRouteImport } from './routes/counter'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PinRouteImport } from './routes/pin'
 import { Route as PlaygroundRouteImport } from './routes/playground'
+import { Route as BillOutletIdRouteImport } from './routes/bill.$outletId'
 import { Route as DeviceSetupRouteImport } from './routes/device.setup'
 
 const IndexRoute = IndexRouteImport.update({
@@ -24,6 +26,11 @@ const IndexRoute = IndexRouteImport.update({
 const CounterRoute = CounterRouteImport.update({
   id: '/counter',
   path: '/counter',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -41,6 +48,11 @@ const PlaygroundRoute = PlaygroundRouteImport.update({
   path: '/playground',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BillOutletIdRoute = BillOutletIdRouteImport.update({
+  id: '/bill/$outletId',
+  path: '/bill/$outletId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DeviceSetupRoute = DeviceSetupRouteImport.update({
   id: '/device/setup',
   path: '/device/setup',
@@ -50,50 +62,75 @@ const DeviceSetupRoute = DeviceSetupRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/counter': typeof CounterRoute
+  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/pin': typeof PinRoute
   '/playground': typeof PlaygroundRoute
+  '/bill/$outletId': typeof BillOutletIdRoute
   '/device/setup': typeof DeviceSetupRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/counter': typeof CounterRoute
+  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/pin': typeof PinRoute
   '/playground': typeof PlaygroundRoute
+  '/bill/$outletId': typeof BillOutletIdRoute
   '/device/setup': typeof DeviceSetupRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/counter': typeof CounterRoute
+  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/pin': typeof PinRoute
   '/playground': typeof PlaygroundRoute
+  '/bill/$outletId': typeof BillOutletIdRoute
   '/device/setup': typeof DeviceSetupRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/counter' | '/login' | '/pin' | '/playground' | '/device/setup'
+    | '/'
+    | '/counter'
+    | '/home'
+    | '/login'
+    | '/pin'
+    | '/playground'
+    | '/bill/$outletId'
+    | '/device/setup'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/counter' | '/login' | '/pin' | '/playground' | '/device/setup'
+  to:
+    | '/'
+    | '/counter'
+    | '/home'
+    | '/login'
+    | '/pin'
+    | '/playground'
+    | '/bill/$outletId'
+    | '/device/setup'
   id:
     | '__root__'
     | '/'
     | '/counter'
+    | '/home'
     | '/login'
     | '/pin'
     | '/playground'
+    | '/bill/$outletId'
     | '/device/setup'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CounterRoute: typeof CounterRoute
+  HomeRoute: typeof HomeRoute
   LoginRoute: typeof LoginRoute
   PinRoute: typeof PinRoute
   PlaygroundRoute: typeof PlaygroundRoute
+  BillOutletIdRoute: typeof BillOutletIdRoute
   DeviceSetupRoute: typeof DeviceSetupRoute
 }
 
@@ -111,6 +148,13 @@ declare module '@tanstack/react-router' {
       path: '/counter'
       fullPath: '/counter'
       preLoaderRoute: typeof CounterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -134,6 +178,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlaygroundRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bill/$outletId': {
+      id: '/bill/$outletId'
+      path: '/bill/$outletId'
+      fullPath: '/bill/$outletId'
+      preLoaderRoute: typeof BillOutletIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/device/setup': {
       id: '/device/setup'
       path: '/device/setup'
@@ -147,9 +198,11 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CounterRoute: CounterRoute,
+  HomeRoute: HomeRoute,
   LoginRoute: LoginRoute,
   PinRoute: PinRoute,
   PlaygroundRoute: PlaygroundRoute,
+  BillOutletIdRoute: BillOutletIdRoute,
   DeviceSetupRoute: DeviceSetupRoute,
 }
 export const routeTree = rootRouteImport

@@ -19,7 +19,8 @@ import { useOnline } from '../lib/online.ts';
 export const Route = createFileRoute('/pin')({
   beforeLoad: () => {
     const device = loadDevice();
-    if (!device) throw redirect({ to: '/login' });
+    // Not a shared tablet: '/' sends an owner's phone to their outlets, anyone else to sign-in.
+    if (!device) throw redirect({ to: '/' });
     return { device };
   },
   component: PinScreen,

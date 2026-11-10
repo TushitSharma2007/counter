@@ -165,3 +165,62 @@ export async function pinLogin(
 export function checkPinOffline(pin: string, pinHash: string): Promise<boolean> {
   return bcrypt.compare(pin, pinHash);
 }
+
+// --- Owners and managers on their own phone ---------------------------------------------------
+
+/** A person's own phone at one outlet: it bills there with its own code. */
+export const PersonalDevice = z.object({
+  deviceId: z.uuid(),
+  outletId: z.uuid(),
+  code: z.string(),
+  label: z.string(),
+});
+export type PersonalDevice = z.infer<typeof PersonalDevice>;
+
+/** This phone's counter at an outlet, created the first time. Same device every time after. */
+export async function ensurePersonalDevice(
+  db: Db,
+  outletId: string,
+  label: string,
+): Promise<PersonalDevice> {
+  const { data, error } = await db.rpc('ensure_personal_device', {
+    p_outlet_id: outletId,
+    p_label: label,
+  });
+  if (error) throw error;
+  return PersonalDevice.parse(data);
+}
+
+export interface Me {
+  userId: string;
+  name: string;
+  /** The most senior role across this person's orgs. */
+  role: 'owner' | 'manager';
+}
+
+/** The signed-in owner or manager, or undefined for anyone else (or no session). */
+export async function getMe(db: Db): Promise<Me | undefined> {
+  const { data: session } = await db.auth.getSession();
+  const userId = session.session?.user.id;
+  if (!userId) return undefined;
+
+  const [{ data: profile, error }, { data: memberships, error: membershipError }] =
+    await Promise.all([
+      db.from('profiles').select('full_name').eq('id', userId).maybeSingle(),
+      db
+        .from('memberships')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('is_active', true)
+        .in('role', ['owner', 'manager']),
+    ]);
+  if (error) throw error;
+  if (membershipError) throw membershipError;
+  if (!profile || memberships.length === 0) return undefined;
+
+  return {
+    userId,
+    name: profile.full_name,
+    role: memberships.some((m) => m.role === 'owner') ? 'owner' : 'manager',
+  };
+}

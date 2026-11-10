@@ -1,6 +1,6 @@
 import { brand } from '@repo/config/brand';
 import { Avatar, cx, Icon, SyncIndicator } from '@repo/ui';
-import { Lock, PauseCircle, Search, X } from 'lucide-react';
+import { PauseCircle, Search, X, type LucideIcon } from 'lucide-react';
 import type { RefObject } from 'react';
 
 export interface TopBarProps {
@@ -14,7 +14,8 @@ export interface TopBarProps {
   heldCount: number;
   onOpenHeld: () => void;
   staff: { id: string; name: string; role: string };
-  onLock: () => void;
+  /** Lock on a shared tablet; Outlets on an owner's own phone. */
+  endAction: { label: string; icon: LucideIcon; onClick: () => void };
 }
 
 /** The dark bar across the top of every POS screen: where am I, find an item, who is signed in. */
@@ -29,7 +30,7 @@ export function TopBar({
   heldCount,
   onOpenHeld,
   staff,
-  onLock,
+  endAction,
 }: TopBarProps) {
   return (
     <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 bg-ink px-3 py-2 text-canvas md:h-16 md:flex-nowrap md:py-0">
@@ -102,11 +103,11 @@ export function TopBar({
           </div>
           <button
             type="button"
-            onClick={onLock}
+            onClick={endAction.onClick}
             className="ml-1 flex h-11 items-center gap-1.5 rounded-md px-3 text-sm font-medium active:bg-canvas/10"
           >
-            <Icon icon={Lock} size={18} />
-            Lock
+            <Icon icon={endAction.icon} size={18} />
+            {endAction.label}
           </button>
         </div>
       </div>

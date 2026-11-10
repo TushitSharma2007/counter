@@ -101,6 +101,7 @@ user ── membership(org_id, role, outlet_ids[])
   - Supabase Auth has no PIN login, so an edge function (`auth-pin`) verifies *registered device token + PIN* and issues that cashier's session.
   - A registered device caches the bcrypt PIN hashes of the PIN staff at **its own outlet** (via `device_roster`), so cashiers can **switch while offline**, with a local 5-try lockout. Accepted trade-off: someone with the device and dev tools could brute-force a PIN offline; server logins still lock out after 5 tries, and revoking the device cuts it off. Bills queued offline are attributed to the cashier and sync once the session refreshes.
   - Owners never sign in with a PIN, so a shared counter device can never hold an owner session.
+- **Owners and managers on their own phone:** after email sign-in they land on **My outlets** and can bill at any outlet they have access to. The first time at an outlet, the phone gets its own *personal* device row and code there (`devices.kind = personal`, no secret: their own session proves who is billing), so its bill series never clashes with that outlet's counter tablet. Personal devices can never be used for PIN sign-in. Shared counter tablets (`kind = counter`) stay fixed to one outlet.
 - **Every merchant gets an org.** A loyalty-only (standalone) merchant is an `orgs` row with POS modules switched off in `feature_flags`. There is one tenancy and RLS model; `loyalty.merchants.org_id` is never NULL.
 - **Customer identity (loyalty):** customers log in with **Google** or **email OTP** (both free), and we also collect their phone number on their profile. **Phone OTP login** is wired through `CustomerAuthAdapter` but switched off until we pay for SMS. Sessions are long-lived (≈1 year, refreshed silently), so a regular customer logs in once and only taps after that. Full flow: `docs/LOYALTY_SPEC.md`.
   - The session is kept in a **server-set httpOnly cookie on our own domain** (a Cloudflare Pages Function proxies Supabase auth), not in `localStorage`. Safari deletes script-written storage after 7 days without a visit, and NFC taps on iPhone open Safari rather than the installed PWA.
@@ -339,6 +340,7 @@ Decided 2026-11-04, after the first doc review. The sections above already refle
 | POS screens follow a Petpooja-like working layout (not copied): dark top bar, category rail, item grid, bill panel | Owner feedback: the first UI was too calm and editorial for a busy counter |
 | Staff PINs are exactly 4 digits; the pad signs in on the 4th digit | One tap less on every staff switch |
 | Bill maths and the cart live in `packages/pos-core` (pure, tested, Deno-safe) | Totals must be exactly right and shared with edge functions |
+| An owner's own phone is also a counter at whichever outlet they are at (personal devices) | Owner request: walk into any outlet, sign in once, bill from the phone |
 | Short dedicated stamp-link domain for `/s/` and `/q/` only | It's baked into tags; the brand domain can change |
 
 **Still open:** kiosk GSTIN, stamp-link domain (placeholder in config), NFC reader model (RC522 or PN532).
