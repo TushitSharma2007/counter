@@ -5,7 +5,33 @@ export type Database = {
   
   "public": {
           Tables: {
-            "categories": {
+            "audit_log": {
+                  Row: {
+                    "action": string,"actor_membership_id": string | null,"created_at": string,"details": NonNullable<Json>,"entity": string,"entity_id": string | null,"id": string,"org_id": string,"outlet_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "action": string,"actor_membership_id"?: string | null,"created_at"?: string,"details"?: NonNullable<Json>,"entity": string,"entity_id"?: string | null,"id"?: string,"org_id": string,"outlet_id"?: string | null
+                  }
+                  Update: {
+                    "action"?: string,"actor_membership_id"?: string | null,"created_at"?: string,"details"?: NonNullable<Json>,"entity"?: string,"entity_id"?: string | null,"id"?: string,"org_id"?: string,"outlet_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "audit_log_actor_membership_id_fkey"
+      columns: ["actor_membership_id"]
+isOneToOne: false
+      referencedRelation: "memberships"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "audit_log_org_id_fkey"
+      columns: ["org_id"]
+isOneToOne: false
+      referencedRelation: "orgs"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"categories": {
                   Row: {
                     "created_at": string,"id": string,"is_active": boolean,"name": string,"org_id": string,"sort": number
                   }
@@ -175,14 +201,14 @@ isOneToOne: false
                   ]
                 },"items": {
                   Row: {
-                    "category_id": string,"code": string,"created_at": string,"description": string | null,"food": Database["public"]['Enums']["food_type"],"id": string,"image_path": string | null,"is_active": boolean,"name": string,"org_id": string,"price_paise": number,"sort": number,"tax_rate_bp": number,"updated_at": string
+                    "category_id": string,"code": string,"created_at": string,"description": string | null,"food": Database["public"]['Enums']["food_type"],"id": string,"is_active": boolean,"name": string,"org_id": string,"price_paise": number,"sort": number,"tax_rate_bp": number,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "category_id": string,"code": string,"created_at"?: string,"description"?: string | null,"food"?: Database["public"]['Enums']["food_type"],"id"?: string,"image_path"?: string | null,"is_active"?: boolean,"name": string,"org_id": string,"price_paise": number,"sort"?: number,"tax_rate_bp"?: number,"updated_at"?: string
+                    "category_id": string,"code": string,"created_at"?: string,"description"?: string | null,"food"?: Database["public"]['Enums']["food_type"],"id"?: string,"is_active"?: boolean,"name": string,"org_id": string,"price_paise": number,"sort"?: number,"tax_rate_bp"?: number,"updated_at"?: string
                   }
                   Update: {
-                    "category_id"?: string,"code"?: string,"created_at"?: string,"description"?: string | null,"food"?: Database["public"]['Enums']["food_type"],"id"?: string,"image_path"?: string | null,"is_active"?: boolean,"name"?: string,"org_id"?: string,"price_paise"?: number,"sort"?: number,"tax_rate_bp"?: number,"updated_at"?: string
+                    "category_id"?: string,"code"?: string,"created_at"?: string,"description"?: string | null,"food"?: Database["public"]['Enums']["food_type"],"id"?: string,"is_active"?: boolean,"name"?: string,"org_id"?: string,"price_paise"?: number,"sort"?: number,"tax_rate_bp"?: number,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -265,6 +291,64 @@ isOneToOne: false
       referencedColumns: ["id","org_id"]
     }
                   ]
+                },"order_items": {
+                  Row: {
+                    "id": string,"item_id": string | null,"line_total_paise": number,"modifiers": NonNullable<Json>,"name": string,"order_id": string,"org_id": string,"outlet_id": string,"qty": number,"sort": number,"tax_rate_bp": number,"unit_paise": number,"variant_name": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "id": string,"item_id"?: string | null,"line_total_paise": number,"modifiers"?: NonNullable<Json>,"name": string,"order_id": string,"org_id": string,"outlet_id": string,"qty": number,"sort"?: number,"tax_rate_bp": number,"unit_paise": number,"variant_name"?: string | null
+                  }
+                  Update: {
+                    "id"?: string,"item_id"?: string | null,"line_total_paise"?: number,"modifiers"?: NonNullable<Json>,"name"?: string,"order_id"?: string,"org_id"?: string,"outlet_id"?: string,"qty"?: number,"sort"?: number,"tax_rate_bp"?: number,"unit_paise"?: number,"variant_name"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "order_items_order_id_org_id_fkey"
+      columns: ["order_id","org_id"]
+isOneToOne: false
+      referencedRelation: "orders"
+      referencedColumns: ["id","org_id"]
+    }
+                  ]
+                },"orders": {
+                  Row: {
+                    "bill_number": string,"bill_seq": number,"billed_by": string | null,"billed_by_name": string,"business_date": string,"cgst_paise": number,"created_at": string,"customer_phone": string | null,"device_id": string,"financial_year": string,"gst_scheme": string,"id": string,"item_total_paise": number,"order_type": string,"org_id": string,"outlet_id": string,"prices_include_tax": boolean,"round_off_paise": number,"sgst_paise": number,"status": Database["public"]['Enums']["order_status"],"synced_at": string,"tax_rounding": string,"taxable_paise": number,"total_paise": number,"void_reason": string | null,"voided_at": string | null,"voided_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "bill_number": string,"bill_seq": number,"billed_by"?: string | null,"billed_by_name": string,"business_date": string,"cgst_paise": number,"created_at": string,"customer_phone"?: string | null,"device_id": string,"financial_year": string,"gst_scheme": string,"id": string,"item_total_paise": number,"order_type": string,"org_id": string,"outlet_id": string,"prices_include_tax": boolean,"round_off_paise": number,"sgst_paise": number,"status"?: Database["public"]['Enums']["order_status"],"synced_at"?: string,"tax_rounding": string,"taxable_paise": number,"total_paise": number,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
+                  }
+                  Update: {
+                    "bill_number"?: string,"bill_seq"?: number,"billed_by"?: string | null,"billed_by_name"?: string,"business_date"?: string,"cgst_paise"?: number,"created_at"?: string,"customer_phone"?: string | null,"device_id"?: string,"financial_year"?: string,"gst_scheme"?: string,"id"?: string,"item_total_paise"?: number,"order_type"?: string,"org_id"?: string,"outlet_id"?: string,"prices_include_tax"?: boolean,"round_off_paise"?: number,"sgst_paise"?: number,"status"?: Database["public"]['Enums']["order_status"],"synced_at"?: string,"tax_rounding"?: string,"taxable_paise"?: number,"total_paise"?: number,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "orders_billed_by_fkey"
+      columns: ["billed_by"]
+isOneToOne: false
+      referencedRelation: "memberships"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "orders_device_id_org_id_fkey"
+      columns: ["device_id","org_id"]
+isOneToOne: false
+      referencedRelation: "devices"
+      referencedColumns: ["id","org_id"]
+    },{
+      foreignKeyName: "orders_outlet_id_org_id_fkey"
+      columns: ["outlet_id","org_id"]
+isOneToOne: false
+      referencedRelation: "outlets"
+      referencedColumns: ["id","org_id"]
+    },{
+      foreignKeyName: "orders_voided_by_fkey"
+      columns: ["voided_by"]
+isOneToOne: false
+      referencedRelation: "memberships"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"orgs": {
                   Row: {
                     "created_at": string,"day_close_hour": number,"gst_scheme": string,"gstin": string | null,"id": string,"modules": (string)[],"name": string,"plan": string,"prices_include_tax": boolean,"slug": string,"timezone": string,"usage": NonNullable<Json>
@@ -297,6 +381,26 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "orgs"
       referencedColumns: ["id"]
+    }
+                  ]
+                },"payments": {
+                  Row: {
+                    "amount_paise": number,"created_at": string,"id": string,"mode": Database["public"]['Enums']["payment_mode"],"order_id": string,"org_id": string,"outlet_id": string,"tendered_paise": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount_paise": number,"created_at": string,"id": string,"mode": Database["public"]['Enums']["payment_mode"],"order_id": string,"org_id": string,"outlet_id": string,"tendered_paise"?: number | null
+                  }
+                  Update: {
+                    "amount_paise"?: number,"created_at"?: string,"id"?: string,"mode"?: Database["public"]['Enums']["payment_mode"],"order_id"?: string,"org_id"?: string,"outlet_id"?: string,"tendered_paise"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "payments_order_id_org_id_fkey"
+      columns: ["order_id","org_id"]
+isOneToOne: false
+      referencedRelation: "orders"
+      referencedColumns: ["id","org_id"]
     }
                   ]
                 },"profiles": {
@@ -345,6 +449,9 @@ isOneToOne: true
 "create_pairing_code":
 { Args: { "p_label": string,"p_outlet_id": string }; Returns: Json
                            },
+"device_last_bill_seq":
+{ Args: { "p_device_id": string,"p_financial_year": string,"p_secret"?: string }; Returns: number
+                           },
 "device_roster":
 { Args: { "p_device_id": string,"p_secret": string }; Returns: Json
                            },
@@ -378,12 +485,18 @@ isOneToOne: true
 "update_staff":
 { Args: { "p": Json }; Returns: undefined
                            },
+"upsert_order":
+{ Args: { "p": Json,"p_secret"?: string }; Returns: Json
+                           },
 "verify_staff_pin":
 { Args: { "p_device_id": string,"p_membership_id": string,"p_pin": string,"p_secret": string }; Returns: Json
+                           },
+"void_order":
+{ Args: { "p": Json,"p_secret"?: string }; Returns: Json
                            }
           }
           Enums: {
-            "app_role": "owner"|"manager"|"cashier"|"kitchen"|"loyalty_staff","food_type": "veg"|"nonveg"|"egg"
+            "app_role": "owner"|"manager"|"cashier"|"kitchen"|"loyalty_staff","food_type": "veg"|"nonveg"|"egg","order_status": "paid"|"void","payment_mode": "cash"|"upi"|"card"|"due"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -499,7 +612,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "app_role": ["owner", "manager", "cashier", "kitchen", "loyalty_staff"],"food_type": ["veg", "nonveg", "egg"]
+            "app_role": ["owner", "manager", "cashier", "kitchen", "loyalty_staff"],"food_type": ["veg", "nonveg", "egg"],"order_status": ["paid", "void"],"payment_mode": ["cash", "upi", "card", "due"]
           }
         }
 } as const

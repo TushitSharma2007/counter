@@ -58,3 +58,12 @@ export {
   updateStaff,
   type DeviceRow,
 } from './staff.ts';
+export {
+  Outbox,
+  serverLastBillSeq,
+  syncOutbox,
+  type StoredBill,
+  type SyncResult,
+  type SyncStatus,
+  type VoidRequest,
+} from './outbox.ts';

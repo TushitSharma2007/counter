@@ -19,6 +19,9 @@ insert into public.outlets (id, org_id, name, code, address, city) values
   ('0193a000-0000-7000-8000-000000000103', '0193a000-0000-7000-8000-000000000001',
    'New Market', 'NWM', 'TT Nagar, New Market', 'Bhopal');
 
+-- A UPI ID that no bank will accept, so a test QR can never send money to a real person.
+update public.outlets set upi_vpa = 'demo-coffee@example' where org_id = '0193a000-0000-7000-8000-000000000001';
+
 -- Staff ----------------------------------------------------------------------------------------
 -- Owner signs in with email + password. Everyone else uses a PIN on a registered device.
 --   Owner     Aditi Verma    owner@demo-coffee.test / demo-owner-2026   all outlets
