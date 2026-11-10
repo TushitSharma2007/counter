@@ -32,3 +32,16 @@ export {
   type OrderPayment,
   type PaymentPart,
 } from './logic/order.ts';
+export {
+  cashDifference,
+  cashMovement,
+  closeShift,
+  openShift,
+  summariseShift,
+  type CashMovement,
+  type ShiftBill,
+  type ShiftClose,
+  type ShiftEvent,
+  type ShiftOpen,
+  type ShiftSummary,
+} from './logic/shift.ts';

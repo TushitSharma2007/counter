@@ -54,6 +54,7 @@ function Counter() {
         .map((s) => ({ membershipId: s.membershipId, name: s.name, pinHash: s.pinHash }))}
       staff={{ id: actor.membershipId, name: actor.name, role: actor.role }}
       endAction={{ label: 'Lock', icon: Lock, onClick: () => void lock() }}
+      keepsDrawer
       banner={
         actor.mode === 'offline' ? (
           <p className="flex shrink-0 items-center gap-2 bg-warning-soft px-4 py-1.5 text-sm text-warning">

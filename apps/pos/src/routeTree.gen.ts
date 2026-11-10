@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as BillsRouteImport } from './routes/bills'
 import { Route as CounterRouteImport } from './routes/counter'
 import { Route as HomeRouteImport } from './routes/home'
+import { Route as LogbookRouteImport } from './routes/logbook'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MenuRouteImport } from './routes/menu'
 import { Route as PairRouteImport } from './routes/pair'
@@ -40,6 +41,11 @@ const CounterRoute = CounterRouteImport.update({
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LogbookRoute = LogbookRouteImport.update({
+  id: '/logbook',
+  path: '/logbook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/bills': typeof BillsRoute
   '/counter': typeof CounterRoute
   '/home': typeof HomeRoute
+  '/logbook': typeof LogbookRoute
   '/login': typeof LoginRoute
   '/menu': typeof MenuRoute
   '/pair': typeof PairRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/bills': typeof BillsRoute
   '/counter': typeof CounterRoute
   '/home': typeof HomeRoute
+  '/logbook': typeof LogbookRoute
   '/login': typeof LoginRoute
   '/menu': typeof MenuRoute
   '/pair': typeof PairRoute
@@ -117,6 +125,7 @@ export interface FileRoutesById {
   '/bills': typeof BillsRoute
   '/counter': typeof CounterRoute
   '/home': typeof HomeRoute
+  '/logbook': typeof LogbookRoute
   '/login': typeof LoginRoute
   '/menu': typeof MenuRoute
   '/pair': typeof PairRoute
@@ -133,6 +142,7 @@ export interface FileRouteTypes {
     | '/bills'
     | '/counter'
     | '/home'
+    | '/logbook'
     | '/login'
     | '/menu'
     | '/pair'
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/bills'
     | '/counter'
     | '/home'
+    | '/logbook'
     | '/login'
     | '/menu'
     | '/pair'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/bills'
     | '/counter'
     | '/home'
+    | '/logbook'
     | '/login'
     | '/menu'
     | '/pair'
@@ -176,6 +188,7 @@ export interface RootRouteChildren {
   BillsRoute: typeof BillsRoute
   CounterRoute: typeof CounterRoute
   HomeRoute: typeof HomeRoute
+  LogbookRoute: typeof LogbookRoute
   LoginRoute: typeof LoginRoute
   MenuRoute: typeof MenuRoute
   PairRoute: typeof PairRoute
@@ -214,6 +227,13 @@ declare module '@tanstack/react-router' {
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/logbook': {
+      id: '/logbook'
+      path: '/logbook'
+      fullPath: '/logbook'
+      preLoaderRoute: typeof LogbookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -280,6 +300,7 @@ const rootRouteChildren: RootRouteChildren = {
   BillsRoute: BillsRoute,
   CounterRoute: CounterRoute,
   HomeRoute: HomeRoute,
+  LogbookRoute: LogbookRoute,
   LoginRoute: LoginRoute,
   MenuRoute: MenuRoute,
   PairRoute: PairRoute,

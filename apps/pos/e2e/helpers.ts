@@ -28,3 +28,12 @@ export async function pinIn(page: Page, name: string, pin: string) {
   await expect(page.getByRole('group', { name: `PIN for ${name}` })).toBeVisible();
   await page.keyboard.type(pin);
 }
+
+/** A counter tablet starts the day by counting the cash in the drawer. */
+export async function startDay(page: Page, rupees = '2000') {
+  await expect(page.getByRole('heading', { name: 'Start the day' })).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Opening cash' })).toBeVisible();
+  await page.keyboard.type(rupees);
+  await page.getByRole('button', { name: /^Start the day with/ }).click();
+  await expect(page.getByRole('region', { name: 'All items' })).toBeVisible();
+}

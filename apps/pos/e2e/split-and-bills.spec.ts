@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { ownerSignIn, pinIn, registerTablet, shot } from './helpers.ts';
+import { ownerSignIn, pinIn, registerTablet, shot, startDay } from './helpers.ts';
 
 // Needs the local stack with the demo seed: pnpm db:start (or db:reset).
 
@@ -12,6 +12,7 @@ test('split a bill between cash and UPI, then the owner voids it from their phon
   // At the counter: ₹88, paid ₹50 cash + ₹38 UPI.
   await registerTablet(page);
   await pinIn(page, 'Priya Sharma', '1357');
+  await startDay(page);
   await expect(page.getByRole('region', { name: 'All items' })).toBeVisible();
   await page.getByRole('button', { name: /^Veg Puff,/ }).click();
   await page.getByRole('button', { name: /^Masala Chai,/ }).click();

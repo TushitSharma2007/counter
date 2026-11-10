@@ -1,6 +1,6 @@
 import { brand } from '@repo/config/brand';
 import { Avatar, cx, Icon, SyncIndicator } from '@repo/ui';
-import { PauseCircle, ReceiptText, Search, X, type LucideIcon } from 'lucide-react';
+import { PauseCircle, ReceiptText, Search, Wallet, X, type LucideIcon } from 'lucide-react';
 import type { SyncView } from '../billing/sync.ts';
 import type { RefObject } from 'react';
 
@@ -15,6 +15,8 @@ export interface TopBarProps {
   searchRef: RefObject<HTMLInputElement | null>;
   heldCount: number;
   onOpenHeld: () => void;
+  /** Counter tablets: the day's cash drawer. */
+  onOpenDrawer?: () => void;
   staff: { id: string; name: string; role: string };
   /** Lock on a shared tablet; Outlets on an owner's own phone. */
   endAction: { label: string; icon: LucideIcon; onClick: () => void };
@@ -32,6 +34,7 @@ export function TopBar({
   searchRef,
   heldCount,
   onOpenHeld,
+  onOpenDrawer,
   staff,
   endAction,
 }: TopBarProps) {
@@ -126,6 +129,17 @@ export function TopBar({
             </span>
           ) : null}
         </button>
+        {onOpenDrawer ? (
+          <button
+            type="button"
+            onClick={onOpenDrawer}
+            aria-label="Cash drawer"
+            className="flex h-11 items-center gap-2 rounded-md px-3 text-sm font-medium text-canvas/90 active:bg-canvas/10"
+          >
+            <Icon icon={Wallet} size={18} />
+            <span className="hidden sm:inline">Drawer</span>
+          </button>
+        ) : null}
         <div className="flex items-center gap-2 border-l border-canvas/15 pl-3">
           <Avatar name={staff.name} id={staff.id} size={32} />
           <div className="hidden leading-tight lg:block">

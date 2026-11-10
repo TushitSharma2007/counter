@@ -87,6 +87,8 @@ export interface OrderPayload {
   totals: Omit<BillTotals, 'taxGroups'>;
   lines: OrderLine[];
   payments: OrderPayment[];
+  /** The counter tablet's open cash drawer, when there is one (not on owners' phones). */
+  shiftId?: string;
 }
 
 /** How part (or all) of a bill was paid. Cash may be more than the part, when change was given. */
@@ -105,6 +107,7 @@ export interface BuildOrderInput {
   device: { id: string; code: string };
   outlet: { id: string; code: string };
   billedBy: OrderPayload['billedBy'];
+  shiftId?: string;
   /** The next number in this device's series for this financial year. */
   seq: number;
   now: string;
@@ -162,5 +165,6 @@ export function buildOrder(input: BuildOrderInput): OrderPayload {
       tenderedPaise:
         p.tenderedPaise !== undefined && p.tenderedPaise > p.amountPaise ? p.tenderedPaise : null,
     })),
+    ...(input.shiftId ? { shiftId: input.shiftId } : {}),
   };
 }

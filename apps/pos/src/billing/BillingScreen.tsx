@@ -8,9 +8,15 @@ import {
   DEFAULT_TAX,
   type OrderPayload,
   type PaymentPart,
+  type ShiftSummary,
 } from '@repo/pos-core';
-import type { StoredBill } from '@repo/db';
+import type { StoredBill, StoredShift } from '@repo/db';
 import { BillsSheet } from './BillsSheet.tsx';
+import { DaySlip } from './DaySlip.tsx';
+import { useDrawer } from './drawer.ts';
+import { DrawerSheet } from './DrawerSheet.tsx';
+import { savedPaperWidth, usePrint } from './print.ts';
+import { DayClosed, StartDay } from './StartDay.tsx';
 import { PaidSheet } from './PaidSheet.tsx';
 import { outbox, useSync } from './sync.ts';
 import type { Approver } from './VoidDialog.tsx';
@@ -39,6 +45,8 @@ export interface BillingScreenProps {
   endAction: TopBarProps['endAction'];
   /** A strip under the top bar, e.g. "signed in offline". */
   banner?: ReactNode;
+  /** Counter tablets keep a cash drawer: start the day, cash in/out, close the day. */
+  keepsDrawer?: boolean;
 }
 
 /**
@@ -68,6 +76,7 @@ function Billing({
   staff,
   endAction,
   banner,
+  keepsDrawer = false,
   menu,
 }: BillingScreenProps & { menu: Menu }) {
   const context = menu.billing;
@@ -83,6 +92,16 @@ function Billing({
     ...(device.secret ? { secret: device.secret } : {}),
   });
   const { cart, dispatch, totals, count, held, hold, resume } = useBilling(tax);
+  const drawer = useDrawer({
+    enabled: keepsDrawer,
+    deviceId: device.id,
+    ...(device.secret ? { secret: device.secret } : {}),
+    by: billedBy,
+    ...(context ? { dayCloseHour: context.org.dayCloseHour } : {}),
+  });
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [closedDay, setClosedDay] = useState<{ shift: StoredShift; summary: ShiftSummary }>();
+  const { print, portal } = usePrint();
   const [paidBill, setPaidBill] = useState<StoredBill>();
   const [billsOpen, setBillsOpen] = useState(false);
 
@@ -145,6 +164,7 @@ function Billing({
   // Keyboard: "/" finds an item, Enter adds the top result (or opens Pay when not searching).
   const overlayOpen =
     paying ||
+    drawerOpen ||
     heldOpen ||
     billOpen ||
     billsOpen ||
@@ -177,6 +197,7 @@ function Billing({
   // Paid: number the bill on this device and queue it, in one step. It syncs in the background.
   const paid = async (payments: PaymentPart[]) => {
     if (!context) return;
+    const shiftId = drawer.status === 'open' ? drawer.shift.id : undefined;
     const now = new Date().toISOString();
     const stored = await outbox.addBill(device.id, financialYear(now), (seq) =>
       buildOrder({
@@ -187,6 +208,7 @@ function Billing({
         device: { id: device.id, code: device.code },
         outlet: { id: context.outlet.id, code: context.outlet.code },
         billedBy,
+        ...(shiftId ? { shiftId } : {}),
         seq,
         now,
         dayCloseHour: context.org.dayCloseHour,
@@ -197,6 +219,7 @@ function Billing({
     dispatch({ type: 'clear' });
     setPaidBill(stored);
     sync.kick();
+    if (drawer.status === 'open') drawer.refresh();
   };
 
   const panel = (className: string, showTitle = true) => (
@@ -218,6 +241,55 @@ function Billing({
     />
   );
 
+  const frame = { outletName, deviceCode: device.code, staff, endAction, banner };
+  const printSlip = (day: { shift: StoredShift; summary: ShiftSummary }) => {
+    const width = savedPaperWidth();
+    print(
+      <DaySlip
+        shift={day.shift}
+        summary={day.summary}
+        orgName={context?.org.name ?? ''}
+        outletName={outletName}
+        deviceCode={device.code}
+        width={width}
+      />,
+      width,
+    );
+  };
+
+  if (closedDay) {
+    return (
+      <>
+        <DayClosed
+          {...frame}
+          shift={closedDay.shift}
+          summary={closedDay.summary}
+          onPrint={() => {
+            printSlip(closedDay);
+          }}
+          onDone={() => {
+            setClosedDay(undefined);
+          }}
+        />
+        {portal}
+      </>
+    );
+  }
+  if (drawer.status === 'loading') {
+    return <div className="grid min-h-dvh place-items-center text-ink-2">Opening the drawer…</div>;
+  }
+  if (drawer.status === 'none') {
+    return (
+      <StartDay
+        {...frame}
+        onStart={drawer.start}
+        {...(drawer.lastCountedPaise === undefined
+          ? {}
+          : { lastCountedPaise: drawer.lastCountedPaise })}
+      />
+    );
+  }
+
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-canvas">
       <TopBar
@@ -235,6 +307,14 @@ function Billing({
         onOpenHeld={() => {
           setHeldOpen(true);
         }}
+        {...(drawer.status === 'open'
+          ? {
+              onOpenDrawer: () => {
+                drawer.refresh();
+                setDrawerOpen(true);
+              },
+            }
+          : {})}
         staff={staff}
         endAction={endAction}
       />
@@ -332,10 +412,35 @@ function Billing({
             onClose={() => {
               setBillsOpen(false);
             }}
-            onChanged={sync.kick}
+            onChanged={() => {
+              sync.kick();
+              if (drawer.status === 'open') drawer.refresh();
+            }}
           />
         </>
       ) : null}
+      {drawer.status === 'open' ? (
+        <DrawerSheet
+          open={drawerOpen}
+          shift={drawer.shift}
+          summary={drawer.summary}
+          onClose={() => {
+            setDrawerOpen(false);
+          }}
+          onMove={async (kind, amount, reason) => {
+            await drawer.move(kind, amount, reason);
+            sync.kick();
+          }}
+          onCloseDay={async (counted, note) => {
+            await drawer.close(counted, note, (day) => {
+              setDrawerOpen(false);
+              setClosedDay(day);
+            });
+            sync.kick();
+          }}
+        />
+      ) : null}
+      {portal}
       <HeldSheet
         open={heldOpen}
         held={held}

@@ -6,6 +6,7 @@ import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-ro
 import {
   Building2,
   ChartNoAxesColumn,
+  BookOpen,
   ChevronRight,
   LogOut,
   ReceiptText,
@@ -168,6 +169,21 @@ function Home() {
               <p className="text-md font-semibold">Bills</p>
               <p className="text-sm text-ink-2">
                 Every tablet’s bills by day: reprint, share, void
+              </p>
+            </div>
+            <Icon icon={ChevronRight} className="text-ink-2" />
+          </Link>
+          <Link
+            to="/logbook"
+            className="mb-2 flex h-20 items-center gap-4 rounded-lg border border-line bg-surface px-4 active:bg-sunken"
+          >
+            <span className="grid size-11 place-items-center rounded-md bg-sunken text-ink-2">
+              <Icon icon={BookOpen} size={22} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-md font-semibold">Log book</p>
+              <p className="text-sm text-ink-2">
+                Each day’s cash drawer: opening, cash in and out, short or over
               </p>
             </div>
             <Icon icon={ChevronRight} className="text-ink-2" />

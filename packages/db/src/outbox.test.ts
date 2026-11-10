@@ -148,3 +148,82 @@ describe('syncOutbox', () => {
     expect((await outbox.get(bill.id))?.void?.status).toBe('synced');
   });
 });
+
+describe('cash drawer', () => {
+  const open = {
+    id: 'shift-1',
+    deviceId: 'device-1',
+    businessDate: '2026-11-10',
+    openedAt: '2026-11-10T03:00:00Z',
+    openedBy: 'm-1',
+    openedByName: 'Priya Sharma',
+    openingCashPaise: 200_000,
+  };
+  const movement = (id: string, at: string) => ({
+    id,
+    shiftId: 'shift-1',
+    kind: 'out' as const,
+    amountPaise: 45_000,
+    reason: 'Milk',
+    by: 'm-1',
+    byName: 'Priya Sharma',
+    at,
+  });
+
+  it('keeps one open day per tablet, and closes it', async () => {
+    const outbox = fresh();
+    await outbox.startShift(open);
+    await expect(outbox.startShift({ ...open, id: 'shift-2' })).rejects.toThrow();
+    await outbox.addCashMovement('device-1', movement('cash-1', '2026-11-10T07:00:00Z'));
+    expect((await outbox.openShift('device-1'))?.movements).toHaveLength(1);
+    await outbox.endShift('device-1', {
+      shiftId: 'shift-1',
+      closedAt: '2026-11-10T16:00:00Z',
+      closedBy: 'm-1',
+      closedByName: 'Priya Sharma',
+      countedCashPaise: 155_000,
+      expectedCashPaise: 155_000,
+      note: null,
+    });
+    expect(await outbox.openShift('device-1')).toBeUndefined();
+    await expect(
+      outbox.addCashMovement('device-1', movement('cash-2', '2026-11-10T17:00:00Z')),
+    ).rejects.toThrow();
+  });
+
+  it('sends the open before its cash, and both before bills', async () => {
+    const outbox = fresh();
+    await outbox.startShift(open);
+    await outbox.addCashMovement('device-1', movement('cash-1', '2026-11-10T07:00:00Z'));
+    await outbox.addBill('device-1', '2627', (seq) => ({ ...payload(seq), shiftId: 'shift-1' }));
+    const { db, rpc } = fakeDb(() => ({ error: null }));
+    await syncOutbox(db, outbox, 'device-1', 'secret');
+    expect(rpc.mock.calls.map((c) => [c[0], (c[1] as { p: { kind?: string } }).p.kind])).toEqual([
+      ['record_shift', 'open'],
+      ['record_shift', 'cash'],
+      ['upsert_order', undefined],
+    ]);
+    expect(await outbox.pending('device-1')).toEqual({ queued: 0, failed: 0 });
+  });
+
+  it('holds back the rest of a day whose open the server refused', async () => {
+    const outbox = fresh();
+    await outbox.startShift(open);
+    await outbox.addCashMovement('device-1', movement('cash-1', '2026-11-10T07:00:00Z'));
+    const { db, rpc } = fakeDb((fn) =>
+      fn === 'record_shift'
+        ? { error: { code: '23505', message: 'This tablet already has an open day.' } }
+        : { error: null },
+    );
+    await syncOutbox(db, outbox, 'device-1');
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(await outbox.pending('device-1')).toEqual({ queued: 1, failed: 1 });
+  });
+
+  it('picks up the server’s open day after storage was wiped, but not over its own', async () => {
+    const outbox = fresh();
+    expect(await outbox.adoptShift(open, [])).toBeDefined();
+    expect(await outbox.adoptShift({ ...open, id: 'shift-9' }, [])).toBeUndefined();
+    expect(await outbox.pending('device-1')).toEqual({ queued: 0, failed: 0 });
+  });
+});

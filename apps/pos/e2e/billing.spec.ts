@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { pinIn, registerTablet, shot } from './helpers.ts';
+import { pinIn, registerTablet, shot, startDay } from './helpers.ts';
 
 // Needs the local stack with the demo seed: pnpm db:start (or db:reset).
 
@@ -15,6 +15,7 @@ test('bill a takeaway order and take cash', async ({ page }, info) => {
   const project = info.project.name;
   await registerTablet(page);
   await pinIn(page, 'Priya Sharma', '1357');
+  await startDay(page);
   await expect(page.getByRole('button', { name: 'Lock' })).toBeVisible();
   await page.screenshot({ path: shot('billing-empty', project) });
 

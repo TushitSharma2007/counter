@@ -31,6 +31,44 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"cash_movements": {
+                  Row: {
+                    "amount_paise": number,"by_membership": string | null,"by_name": string,"created_at": string,"id": string,"kind": string,"org_id": string,"outlet_id": string,"reason": string,"shift_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount_paise": number,"by_membership"?: string | null,"by_name": string,"created_at": string,"id": string,"kind": string,"org_id": string,"outlet_id": string,"reason": string,"shift_id": string
+                  }
+                  Update: {
+                    "amount_paise"?: number,"by_membership"?: string | null,"by_name"?: string,"created_at"?: string,"id"?: string,"kind"?: string,"org_id"?: string,"outlet_id"?: string,"reason"?: string,"shift_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "cash_movements_by_membership_fkey"
+      columns: ["by_membership"]
+isOneToOne: false
+      referencedRelation: "memberships"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "cash_movements_outlet_id_org_id_fkey"
+      columns: ["outlet_id","org_id"]
+isOneToOne: false
+      referencedRelation: "outlets"
+      referencedColumns: ["id","org_id"]
+    },{
+      foreignKeyName: "cash_movements_shift_id_org_id_fkey"
+      columns: ["shift_id","org_id"]
+isOneToOne: false
+      referencedRelation: "shift_summaries"
+      referencedColumns: ["id","org_id"]
+    },{
+      foreignKeyName: "cash_movements_shift_id_org_id_fkey"
+      columns: ["shift_id","org_id"]
+isOneToOne: false
+      referencedRelation: "shifts"
+      referencedColumns: ["id","org_id"]
+    }
+                  ]
                 },"categories": {
                   Row: {
                     "created_at": string,"id": string,"is_active": boolean,"name": string,"org_id": string,"sort": number
@@ -313,14 +351,14 @@ isOneToOne: false
                   ]
                 },"orders": {
                   Row: {
-                    "bill_number": string,"bill_seq": number,"billed_by": string | null,"billed_by_name": string,"business_date": string,"cgst_paise": number,"created_at": string,"customer_phone": string | null,"device_id": string,"financial_year": string,"gst_scheme": string,"id": string,"item_total_paise": number,"order_type": string,"org_id": string,"outlet_id": string,"prices_include_tax": boolean,"round_off_paise": number,"sgst_paise": number,"status": Database["public"]['Enums']["order_status"],"synced_at": string,"tax_rounding": string,"taxable_paise": number,"total_paise": number,"void_reason": string | null,"voided_at": string | null,"voided_by": string | null
+                    "bill_number": string,"bill_seq": number,"billed_by": string | null,"billed_by_name": string,"business_date": string,"cgst_paise": number,"created_at": string,"customer_phone": string | null,"device_id": string,"financial_year": string,"gst_scheme": string,"id": string,"item_total_paise": number,"order_type": string,"org_id": string,"outlet_id": string,"prices_include_tax": boolean,"round_off_paise": number,"sgst_paise": number,"shift_id": string | null,"status": Database["public"]['Enums']["order_status"],"synced_at": string,"tax_rounding": string,"taxable_paise": number,"total_paise": number,"void_reason": string | null,"voided_at": string | null,"voided_by": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "bill_number": string,"bill_seq": number,"billed_by"?: string | null,"billed_by_name": string,"business_date": string,"cgst_paise": number,"created_at": string,"customer_phone"?: string | null,"device_id": string,"financial_year": string,"gst_scheme": string,"id": string,"item_total_paise": number,"order_type": string,"org_id": string,"outlet_id": string,"prices_include_tax": boolean,"round_off_paise": number,"sgst_paise": number,"status"?: Database["public"]['Enums']["order_status"],"synced_at"?: string,"tax_rounding": string,"taxable_paise": number,"total_paise": number,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
+                    "bill_number": string,"bill_seq": number,"billed_by"?: string | null,"billed_by_name": string,"business_date": string,"cgst_paise": number,"created_at": string,"customer_phone"?: string | null,"device_id": string,"financial_year": string,"gst_scheme": string,"id": string,"item_total_paise": number,"order_type": string,"org_id": string,"outlet_id": string,"prices_include_tax": boolean,"round_off_paise": number,"sgst_paise": number,"shift_id"?: string | null,"status"?: Database["public"]['Enums']["order_status"],"synced_at"?: string,"tax_rounding": string,"taxable_paise": number,"total_paise": number,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
                   }
                   Update: {
-                    "bill_number"?: string,"bill_seq"?: number,"billed_by"?: string | null,"billed_by_name"?: string,"business_date"?: string,"cgst_paise"?: number,"created_at"?: string,"customer_phone"?: string | null,"device_id"?: string,"financial_year"?: string,"gst_scheme"?: string,"id"?: string,"item_total_paise"?: number,"order_type"?: string,"org_id"?: string,"outlet_id"?: string,"prices_include_tax"?: boolean,"round_off_paise"?: number,"sgst_paise"?: number,"status"?: Database["public"]['Enums']["order_status"],"synced_at"?: string,"tax_rounding"?: string,"taxable_paise"?: number,"total_paise"?: number,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
+                    "bill_number"?: string,"bill_seq"?: number,"billed_by"?: string | null,"billed_by_name"?: string,"business_date"?: string,"cgst_paise"?: number,"created_at"?: string,"customer_phone"?: string | null,"device_id"?: string,"financial_year"?: string,"gst_scheme"?: string,"id"?: string,"item_total_paise"?: number,"order_type"?: string,"org_id"?: string,"outlet_id"?: string,"prices_include_tax"?: boolean,"round_off_paise"?: number,"sgst_paise"?: number,"shift_id"?: string | null,"status"?: Database["public"]['Enums']["order_status"],"synced_at"?: string,"tax_rounding"?: string,"taxable_paise"?: number,"total_paise"?: number,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -417,6 +455,44 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"shifts": {
+                  Row: {
+                    "business_date": string,"closed_at": string | null,"closed_by": string | null,"closed_by_name": string | null,"counted_cash_paise": number | null,"device_id": string,"expected_cash_paise": number | null,"id": string,"note": string | null,"opened_at": string,"opened_by": string | null,"opened_by_name": string,"opening_cash_paise": number,"org_id": string,"outlet_id": string,"synced_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "business_date": string,"closed_at"?: string | null,"closed_by"?: string | null,"closed_by_name"?: string | null,"counted_cash_paise"?: number | null,"device_id": string,"expected_cash_paise"?: number | null,"id": string,"note"?: string | null,"opened_at": string,"opened_by"?: string | null,"opened_by_name": string,"opening_cash_paise": number,"org_id": string,"outlet_id": string,"synced_at"?: string
+                  }
+                  Update: {
+                    "business_date"?: string,"closed_at"?: string | null,"closed_by"?: string | null,"closed_by_name"?: string | null,"counted_cash_paise"?: number | null,"device_id"?: string,"expected_cash_paise"?: number | null,"id"?: string,"note"?: string | null,"opened_at"?: string,"opened_by"?: string | null,"opened_by_name"?: string,"opening_cash_paise"?: number,"org_id"?: string,"outlet_id"?: string,"synced_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "shifts_closed_by_fkey"
+      columns: ["closed_by"]
+isOneToOne: false
+      referencedRelation: "memberships"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "shifts_device_id_org_id_fkey"
+      columns: ["device_id","org_id"]
+isOneToOne: false
+      referencedRelation: "devices"
+      referencedColumns: ["id","org_id"]
+    },{
+      foreignKeyName: "shifts_opened_by_fkey"
+      columns: ["opened_by"]
+isOneToOne: false
+      referencedRelation: "memberships"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "shifts_outlet_id_org_id_fkey"
+      columns: ["outlet_id","org_id"]
+isOneToOne: false
+      referencedRelation: "outlets"
+      referencedColumns: ["id","org_id"]
+    }
+                  ]
                 },"staff_pins": {
                   Row: {
                     "failed_attempts": number,"locked_until": string | null,"membership_id": string,"pin_hash": string,"updated_at": string
@@ -440,7 +516,27 @@ isOneToOne: true
                 }
           }
           Views: {
-            [_ in never]: never
+            "shift_summaries": {
+                  Row: {
+                    "bills": number | null,"business_date": string,"card_sales_paise": number | null,"cash_in_paise": number | null,"cash_out_paise": number | null,"cash_sales_paise": number | null,"closed_at": string | null,"closed_by_name": string | null,"counted_cash_paise": number | null,"device_code": string,"device_id": string,"device_label": string,"difference_paise": number | null,"expected_cash_paise": number | null,"id": string,"note": string | null,"opened_at": string,"opened_by_name": string,"opening_cash_paise": number,"org_id": string,"outlet_id": string,"sales_paise": number | null,"upi_sales_paise": number | null,"void_paise": number | null,"voids": number | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "shifts_device_id_org_id_fkey"
+      columns: ["device_id","org_id"]
+isOneToOne: false
+      referencedRelation: "devices"
+      referencedColumns: ["id","org_id"]
+    },{
+      foreignKeyName: "shifts_outlet_id_org_id_fkey"
+      columns: ["outlet_id","org_id"]
+isOneToOne: false
+      referencedRelation: "outlets"
+      referencedColumns: ["id","org_id"]
+    }
+                  ]
+                }
           }
           Functions: {
             "add_staff":
@@ -451,6 +547,9 @@ isOneToOne: true
                            },
 "device_last_bill_seq":
 { Args: { "p_device_id": string,"p_financial_year": string,"p_secret"?: string }; Returns: number
+                           },
+"device_open_shift":
+{ Args: { "p_device_id": string,"p_secret"?: string }; Returns: Json
                            },
 "device_roster":
 { Args: { "p_device_id": string,"p_secret": string }; Returns: Json
@@ -466,6 +565,9 @@ isOneToOne: true
                            },
 "pair_device":
 { Args: { "p_code": string }; Returns: Json
+                           },
+"record_shift":
+{ Args: { "p": Json,"p_secret"?: string }; Returns: Json
                            },
 "register_device":
 { Args: { "p_label": string,"p_outlet_id": string }; Returns: Json

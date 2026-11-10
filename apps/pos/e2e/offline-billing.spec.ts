@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { pinIn, registerTablet, shot } from './helpers.ts';
+import { pinIn, registerTablet, shot, startDay } from './helpers.ts';
 
 // Needs the local stack with the demo seed: pnpm db:start (or db:reset).
 // Registers a fresh tablet each run, so its bill series always starts at 1.
@@ -33,6 +33,7 @@ test('bills keep going offline, sync when back, and a manager can void one', asy
   test.skip(info.project.name !== 'tablet', 'the counter tablet is where this matters');
   await registerTablet(page);
   await pinIn(page, 'Priya Sharma', '1357');
+  await startDay(page);
   await expect(page.getByRole('region', { name: 'All items' })).toBeVisible();
 
   // Bill 1, online.

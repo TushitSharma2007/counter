@@ -63,8 +63,11 @@ export {
 export {
   Outbox,
   serverLastBillSeq,
+  serverOpenShift,
   syncOutbox,
   type StoredBill,
+  type StoredShift,
+  type StoredShiftEvent,
   type SyncResult,
   type SyncStatus,
   type VoidRequest,
@@ -78,3 +81,4 @@ export {
   type OutletDetails,
 } from './settings.ts';
 export { fetchBills, voidBillFromPhone, type ServerBill } from './bills.ts';
+export { fetchCashMovements, fetchLogBook, type LogBookDay, type LogBookShift } from './logbook.ts';
