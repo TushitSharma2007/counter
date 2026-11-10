@@ -96,7 +96,7 @@ function DeviceSetup() {
 
       <Input
         label="Device name"
-        hint="So you can tell tablets apart, e.g. Counter tablet or Kitchen screen."
+        hint="So you can tell tablets apart, e.g. Counter tablet or Counter 2."
         value={label}
         maxLength={60}
         onChange={(event) => {

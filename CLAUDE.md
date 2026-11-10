@@ -8,7 +8,7 @@ A **Petpooja-style business management system** for food & beverage outlets. It 
 
 It has two products:
 
-1. **POS / business management** (`apps/pos`): billing, menu, kitchen tickets, inventory, expenses, staff, shifts, day close and reports across branches. It updates **live** everywhere: an order billed at Branch A shows on the owner's phone dashboard within a second or two.
+1. **POS / business management** (`apps/pos`): billing, menu, inventory, expenses, staff, shifts, day close and reports across branches. It updates **live** everywhere: an order billed at Branch A shows on the owner's phone dashboard within a second or two.
 2. **Loyalty** (`apps/loyalty` + `packages/loyalty-core`): a digital stamp/points card. The customer **taps their phone on an NFC "stamp" kept in the café** (or scans a QR next to it), logs in once, and collects stamps with a signature stamp animation. Website/PWA first; a native app + App Clip come later. It **plugs into the POS**, but it is **also sold on its own** to cafés that use a different POS (or no POS).
 
 It runs **on every device**: phones, tablets and PCs, as one responsive installable **PWA**. There are no app-store builds for now.
@@ -17,7 +17,7 @@ It runs **on every device**: phones, tablets and PCs, as one responsive installa
 - **Multi-tenant**: every row belongs to an `org_id`. No data leaks between tenants. This is enforced in the database (RLS), not just in the UI.
 - **Multi-outlet**: one org has many outlets (branches). Menus, prices, stock, staff and reports can be per outlet or org-wide.
 - **Offline-tolerant billing**: Indian kiosk internet drops. Billing must **never stop** because the network is down. Orders queue locally and sync when the network returns.
-- **Live**: owner and manager dashboards, the kitchen display and the loyalty status update in realtime.
+- **Live**: owner and manager dashboards and the loyalty status update in realtime.
 - **Free to run now, upgradeable later**: use only free tiers today. Every external service (DB, messaging, SMS, WhatsApp, payments, storage) sits behind an adapter, so it can be swapped for a paid provider without touching feature code.
 - **Design quality**: it must look like a crafted product, not generic AI output. See §9.
 
@@ -95,7 +95,7 @@ org (tenant / business)
 user ── membership(org_id, role, outlet_ids[])
 ```
 
-- **Roles:** `owner`, `manager`, `cashier`, `kitchen`, `loyalty_staff` (loyalty-only tenants).
+- **Roles:** `owner`, `manager`, `cashier`, `loyalty_staff` (loyalty-only tenants). (`kitchen` remains in the database enum but is unused: there is no kitchen display.)
 - Owners see all outlets. Managers and cashiers see only the outlets assigned to them.
 - **Staff login:** email/phone + password for owners and managers. Cashiers use a **4–6 digit PIN on a registered device** for fast switching at the counter. A shared kiosk tablet must never stay logged in as the owner.
   - Supabase Auth has no PIN login, so an edge function (`auth-pin`) verifies *registered device token + PIN* and issues that cashier's session.
@@ -107,7 +107,7 @@ user ── membership(org_id, role, outlet_ids[])
   - The session is kept in a **server-set httpOnly cookie on our own domain** (a Cloudflare Pages Function proxies Supabase auth), not in `localStorage`. Safari deletes script-written storage after 7 days without a visit, and NFC taps on iPhone open Safari rather than the installed PWA.
   - Web Push on iOS only works in the installed PWA; treat it as a bonus channel, never the only one.
 - **Every table** has `org_id` plus an RLS policy based on the `memberships` table. Outlet-scoped tables also have `outlet_id` and check the outlet list. Write RLS policies in the same migration that creates the table. Add a test that tenant A cannot read tenant B.
-- Use `plan` and `feature_flags` on `org` to gate modules (e.g. `inventory`, `kds`, `loyalty`, `multi_outlet`), so plans can be sold later.
+- Use `plan` and `feature_flags` on `org` to gate modules (e.g. `inventory`, `loyalty`, `multi_outlet`), so plans can be sold later.
 
 ---
 
@@ -124,8 +124,8 @@ user ── membership(org_id, role, outlet_ids[])
    - Attach a customer by phone, which auto-links their loyalty card (§6). The cashier sees the cardholder's **name** before confirming.
    - Print / share the bill: browser print with **58 mm and 80 mm** layouts (ESC/POS over Bluetooth/USB later), WhatsApp share link through `wa.me` (free).
    - Hold/park orders, reprint, void with a reason (manager PIN).
-4. **KOT / kitchen display (KDS)**: realtime order queue per outlet with statuses `new → preparing → ready → served`, sound cue and bump-bar style big buttons.
-5. **Shifts & day close**: opening cash, cash in/out, expected vs counted cash, payment-mode split. The day-close report goes to the owner on Telegram.
+4. *(Removed: no kitchen display or KOT screen in this product. Owner decision, 2026-11-10.)*
+5. **Shifts & day close (log book)**: opening cash, cash in/out with reasons, expected vs counted cash, short/over, payment-mode split. Each close is kept in a **log book** the owner and managers browse by outlet and day, like a ledger. No daily Telegram message.
 6. **Live owner dashboard**: today's sales across outlets, orders per hour, top items, payment mix, outlet comparison. Updates live.
 
 ### Phase 2
@@ -197,7 +197,7 @@ It should feel like a real rubber stamp hitting paper: the stamp drops in with a
 - **Bill numbers:** per **registered device**, per financial year, gapless and human-readable (`BR1-T2/2526/000123` = outlet BR1, tablet T2). They are assigned **locally at billing time**, even offline, so the printed number is final (GST requires the serial number at issue). The server enforces uniqueness and flags gaps; a device's series is never reused if the device is re-registered.
 - **Timestamps:** `timestamptz` in UTC. Display in `Asia/Kolkata`. A "business day" can end after midnight (configurable day-close hour).
 - **Offline outbox (`packages/db/outbox`):** writes go to Dexie first → background sync pushes them through an idempotent RPC (`upsert_order(payload, client_id)`). Orders, payments and stock movements are **append-only events**, so conflicts are rare. Menu and prices are server-authoritative and cached for offline use.
-- **Realtime:** Supabase Realtime `postgres_changes` filtered by `outlet_id` (KDS, pending loyalty approvals) or `org_id` (owner dashboard). Unsubscribe on unmount. Keep channel counts low (free tier limit: 200 concurrent connections).
+- **Realtime:** Supabase Realtime `postgres_changes` filtered by `outlet_id` (pending loyalty approvals) or `org_id` (owner dashboard). Unsubscribe on unmount. Keep channel counts low (free tier limit: 200 concurrent connections).
 - **Sync status is always visible:** a small indicator showing "Live" / "Offline – 3 bills queued" / "Syncing…".
 - **Migrations only:** never change the schema in the dashboard. Run `supabase gen types` after every migration.
 - **Audit log** for voids, discounts above a threshold, price changes, stock adjustments and loyalty manual adjustments.
@@ -222,14 +222,13 @@ Design each screen for its **primary device first**, then adapt:
 | Screen | Primary device | Notes |
 |---|---|---|
 | Billing | 10" tablet, landscape | Also works on a phone (bottom-sheet cart) and on a PC with keyboard shortcuts (`/` search, `Enter` pay, number keys for qty) |
-| KDS | Tablet / TV | Huge type, high contrast, readable at 2 m |
 | Owner dashboard | Phone | The owner checks it on the go; thumb-friendly |
 | Back office (menu, inventory, reports) | PC/laptop | Dense tables, bulk edit, keyboard navigation |
 | Customer loyalty card | Phone | Loads in under 1.5 s on a 4G budget Android phone; **first-route JS under 120 KB gzipped** (checked in CI). The QR scanner, redeem screen and merchant console are lazy-loaded. |
 
 - Touch targets ≥ 48px on POS screens. No hover-only interactions.
 - Test on low-end Android (4 GB RAM, Chrome) as the baseline, not on a MacBook.
-- Use `navigator.wakeLock` on POS/KDS so screens don't sleep.
+- Use `navigator.wakeLock` on POS counter screens so screens don't sleep.
 
 ---
 
@@ -343,12 +342,14 @@ Decided 2026-11-04, after the first doc review. The sections above already refle
 | Menu: everyone reads, only owners change items and prices, managers set sold out / outlet prices at their outlets; items and categories are switched off, never deleted | Cashiers bill from it; past bills keep their history |
 | Menu tables use composite foreign keys `(id, org_id)` | The database itself stops a row pointing at another tenant's data |
 | Counter tablets are added with a one-time 8-character pairing code (10 minutes, single use); the owner's password never goes on a tablet | Owner signs in on their own phone, types nothing secret on shared hardware |
-| Only owners add, edit or switch off staff; managers reset PINs of cashiers and kitchen staff at their own outlets and pair/revoke tablets there | Least privilege; managers run the floor, owners run the business |
+| Only owners add, edit or switch off staff; managers reset PINs of cashiers at their own outlets and pair/revoke tablets there | Least privilege; managers run the floor, owners run the business |
 | New staff logins come from the `staff-create` edge function, which then calls `add_staff` as the owner; PIN-only staff get an unmailable `@staff.invalid` address | Only the server can create logins, but the database still decides who may add staff |
 | No item photos anywhere in the app | Owner decision: menus are text, codes and food marks; keeps the app light and fast |
 | Bills sync with the device's own credential (counter tablet key, or the owner's login on a personal phone), not the cashier's session | A cashier who signed in offline has no session, but their bills must still sync |
 | Voids are approved with a manager's PIN checked on the device (offline-capable); the server checks the approver manages that outlet and writes the audit log | Voids must work at a busy counter with no internet |
 | No khata (customer credit / due) in this product | Owner decision: bills are paid in full at the counter. The database enum keeps an unused `due` value. |
+| No kitchen display (KDS/KOT); the `kitchen` role is unused | Owner decision, 2026-11-10 |
+| Day close is a log book (one page per outlet per day), not a daily Telegram message | Owner decision: a record to look back through, not a notification |
 | Short dedicated stamp-link domain for `/s/` and `/q/` only | It's baked into tags; the brand domain can change |
 
 **Still open:** kiosk GSTIN, stamp-link domain (placeholder in config), NFC reader model (RC522 or PN532).

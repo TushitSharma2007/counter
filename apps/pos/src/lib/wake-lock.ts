@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-/** Keeps the screen awake while mounted (billing, KDS). Re-acquires when the tab becomes visible again. */
+/** Keeps the screen awake while mounted (billing). Re-acquires when the tab becomes visible again. */
 export function useWakeLock(): void {
   useEffect(() => {
     if (!('wakeLock' in navigator)) return;

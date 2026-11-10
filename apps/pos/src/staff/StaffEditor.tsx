@@ -11,11 +11,10 @@ import { Button, cx, Input, Segmented, Sheet, SheetContent, Switch, toast } from
 import { useState } from 'react';
 import { db } from '../lib/db.ts';
 
-type Role = 'manager' | 'cashier' | 'kitchen';
+type Role = 'manager' | 'cashier';
 
 const ROLE_OPTIONS: { value: Role; label: string }[] = [
   { value: 'cashier', label: 'Cashier' },
-  { value: 'kitchen', label: 'Kitchen' },
   { value: 'manager', label: 'Manager' },
 ];
 
@@ -48,9 +47,7 @@ function EditorBody({ member, orgId, outlets, canEdit, onClose, onSaved }: Staff
   const isOwnerRow = member?.role === 'owner';
   const [name, setName] = useState(member?.name ?? '');
   const [phone, setPhone] = useState(member?.phone ?? '');
-  const [role, setRole] = useState<Role>(
-    member && member.role !== 'owner' && member.role !== 'loyalty_staff' ? member.role : 'cashier',
-  );
+  const [role, setRole] = useState<Role>(member?.role === 'manager' ? 'manager' : 'cashier');
   const [outletIds, setOutletIds] = useState<string[]>(
     member?.outletIds ?? (outlets.length === 1 && outlets[0] ? [outlets[0].id] : []),
   );
@@ -194,9 +191,7 @@ function EditorBody({ member, orgId, outlets, canEdit, onClose, onSaved }: Staff
               <p className="text-sm text-ink-2">
                 {role === 'manager'
                   ? 'Bills, marks items sold out, resets cashier PINs and adds tablets at their outlets.'
-                  : role === 'kitchen'
-                    ? 'Works the kitchen screen.'
-                    : 'Bills at the counter.'}
+                  : 'Bills at the counter.'}
               </p>
             </fieldset>
 

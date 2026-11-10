@@ -218,7 +218,7 @@ function Playground() {
               defaultValue="80"
               error="Cashiers can give up to ₹50. Ask a manager."
             />
-            <Input label="Note for kitchen" placeholder="Less sugar" />
+            <Input label="Note on the bill" placeholder="Less sugar" />
           </div>
         </Section>
 

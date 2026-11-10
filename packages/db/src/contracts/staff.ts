@@ -2,7 +2,7 @@
 // (Deno), so this file imports nothing but zod.
 import { z } from 'zod';
 
-export const STAFF_ROLES = ['manager', 'cashier', 'kitchen'] as const;
+export const STAFF_ROLES = ['manager', 'cashier'] as const;
 
 export const StaffCreateRequest = z.object({
   orgId: z.uuid(),

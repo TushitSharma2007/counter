@@ -6,7 +6,7 @@ values (
   '0193a000-0000-7000-8000-000000000001',
   'Demo Coffee Co.',
   'demo-coffee',
-  array['pos', 'kds', 'loyalty', 'multi_outlet'],
+  array['pos', 'loyalty', 'multi_outlet'],
   'regular',
   true
 );
@@ -29,7 +29,7 @@ update public.outlets set upi_vpa = 'demo-coffee@example' where org_id = '0193a0
 --   Cashier   Priya Sharma   PIN 1357                                   Arera Colony
 --   Cashier   Imran Khan     PIN 2468                                   MP Nagar
 --   Cashier   Kavya Joshi    PIN 3691                                   New Market
---   Kitchen   Suresh Patel   PIN 9024                                   Arera Colony
+--   Cashier   Suresh Patel   PIN 9024                                   Arera Colony
 
 do $$
 declare
@@ -52,7 +52,7 @@ begin
       ('0193a000-0000-7000-8000-000000000205', 'Kavya Joshi', 'kavya@demo-coffee.test',
        null, 'cashier', array[nwm], '3691'),
       ('0193a000-0000-7000-8000-000000000206', 'Suresh Patel', 'suresh@demo-coffee.test',
-       null, 'kitchen', array[arc], '9024')
+       null, 'cashier', array[arc], '9024')
     ) as s (id, full_name, email, password, role, outlet_ids, pin)
   loop
     insert into auth.users (

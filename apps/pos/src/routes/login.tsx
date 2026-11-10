@@ -2,7 +2,7 @@ import { brand } from '@repo/config/brand';
 import { signInWithPassword } from '@repo/db';
 import { Button, Icon, Input } from '@repo/ui';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { ChartNoAxesColumn, ChefHat, ReceiptText } from 'lucide-react';
+import { ChartNoAxesColumn, BookOpen, ReceiptText } from 'lucide-react';
 import { useState } from 'react';
 import { db } from '../lib/db.ts';
 import { loadDevice } from '../lib/device.ts';
@@ -13,7 +13,7 @@ export const Route = createFileRoute('/login')({
 
 const WHAT_YOU_GET = [
   { icon: ReceiptText, text: 'Billing that keeps going when the internet drops' },
-  { icon: ChefHat, text: 'Orders on the kitchen screen the moment they are billed' },
+  { icon: BookOpen, text: 'Every day closed in a log book you can look back through' },
   { icon: ChartNoAxesColumn, text: 'Every outlet’s sales, live, on your phone' },
 ];
 

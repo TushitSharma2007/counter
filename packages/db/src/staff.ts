@@ -66,7 +66,7 @@ export async function updateStaff(
     membershipId: string;
     name?: string;
     phone?: string | null;
-    role?: 'manager' | 'cashier' | 'kitchen';
+    role?: 'manager' | 'cashier';
     outletIds?: string[];
     isActive?: boolean;
   },

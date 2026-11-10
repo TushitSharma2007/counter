@@ -1,5 +1,5 @@
 /** Modules an org can have switched on (`orgs.feature_flags`). Plans are built from these. */
-export const MODULES = ['pos', 'kds', 'inventory', 'loyalty', 'multi_outlet'] as const;
+export const MODULES = ['pos', 'inventory', 'loyalty', 'multi_outlet'] as const;
 
 export type Module = (typeof MODULES)[number];
 

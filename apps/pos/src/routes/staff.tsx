@@ -30,7 +30,7 @@ import { ago } from '../lib/time.ts';
 import { PairDialog } from '../staff/PairDialog.tsx';
 import { StaffEditor } from '../staff/StaffEditor.tsx';
 
-// Staff and devices. Owners manage everything; managers reset PINs of cashiers and kitchen staff
+// Staff and devices. Owners manage everything; managers reset PINs of cashiers
 // at their outlets and add or revoke tablets there.
 export const Route = createFileRoute('/staff')({
   beforeLoad: async () => {
@@ -117,7 +117,7 @@ function StaffPage() {
               <p className="text-ink-2">
                 {isOwner
                   ? 'Add staff, give them a PIN, and choose where they work.'
-                  : 'You can reset PINs for cashiers and kitchen staff at your outlets.'}
+                  : 'You can reset PINs for cashiers at your outlets.'}
               </p>
               {isOwner ? (
                 <Button
