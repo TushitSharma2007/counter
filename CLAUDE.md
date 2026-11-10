@@ -115,7 +115,7 @@ user ── membership(org_id, role, outlet_ids[])
 
 ### Phase 1: sellable MVP for the kiosk
 1. **Org/outlet setup + staff** (roles, PINs, device registration).
-2. **Menu**: categories, items, **variants** (size: S/M/L), **add-ons/modifiers** (extra shot, oat milk), per-outlet price overrides and availability toggles, item images, tax (GST) slab per item, veg/non-veg/egg mark.
+2. **Menu**: categories, items, **variants** (size: S/M/L), **add-ons/modifiers** (extra shot, oat milk), per-outlet price overrides and availability toggles, tax (GST) slab per item, veg/non-veg/egg mark.
 3. **Billing screen** (the most important screen in the product):
    - Category rail + item grid, built for **one-handed tablet use**.
    - Cart with modifiers, qty, notes, item- and bill-level discounts (role-limited).
@@ -263,7 +263,6 @@ Before calling any UI done, screenshot it at phone, tablet and desktop sizes (Pl
 
 - Keep realtime subscriptions minimal and scoped. Aggregate dashboard numbers through Postgres views/RPCs, not by streaming every row.
 - Paginate everything. No unbounded `select *`.
-- Compress images on upload (client-side, WebP, max 800px) before they reach Storage.
 - Archive or roll up old order data into daily summary tables (`daily_outlet_sales`) so reports stay fast and the DB stays under 500 MB longer.
 - Add a cheap scheduled keep-alive (GitHub Actions cron hitting a health RPC) for **non-production** Supabase projects that would otherwise pause.
 - Track usage per org (`orgs.usage`) so we know when a tenant needs a paid plan.
@@ -346,6 +345,7 @@ Decided 2026-11-04, after the first doc review. The sections above already refle
 | Counter tablets are added with a one-time 8-character pairing code (10 minutes, single use); the owner's password never goes on a tablet | Owner signs in on their own phone, types nothing secret on shared hardware |
 | Only owners add, edit or switch off staff; managers reset PINs of cashiers and kitchen staff at their own outlets and pair/revoke tablets there | Least privilege; managers run the floor, owners run the business |
 | New staff logins come from the `staff-create` edge function, which then calls `add_staff` as the owner; PIN-only staff get an unmailable `@staff.invalid` address | Only the server can create logins, but the database still decides who may add staff |
+| No item photos anywhere in the app | Owner decision: menus are text, codes and food marks; keeps the app light and fast |
 | Short dedicated stamp-link domain for `/s/` and `/q/` only | It's baked into tags; the brand domain can change |
 
 **Still open:** kiosk GSTIN, stamp-link domain (placeholder in config), NFC reader model (RC522 or PN532).
