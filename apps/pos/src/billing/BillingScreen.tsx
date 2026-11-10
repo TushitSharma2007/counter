@@ -1,10 +1,11 @@
 import { Button, formatINR, Sheet, SheetContent, toast } from '@repo/ui';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { TopBar, type TopBarProps } from '../components/TopBar.tsx';
-import { CATEGORIES, ITEMS, needsSize, searchItems, type MenuItem } from '../fixtures/menu.ts';
+import type { Menu, MenuItem } from '@repo/db';
 import { useOnline } from '../lib/online.ts';
 import { BillPanel } from './BillPanel.tsx';
 import { HeldSheet } from './HeldSheet.tsx';
+import { needsSize, searchItems, useMenu } from './menu-data.ts';
 import { ALL, CategoryChips, CategoryRail, ItemGrid } from './Menu.tsx';
 import { OptionsDialog, type OptionsChoice } from './OptionsDialog.tsx';
 import { PayDialog, type Payment } from './PayDialog.tsx';
@@ -18,6 +19,7 @@ const PAID_AS: Record<Payment['mode'], string> = {
 };
 
 export interface BillingScreenProps {
+  outletId: string;
   outletName: string;
   deviceCode: string;
   /** Who is billing: the PIN-signed-in staff member, or the owner on their own phone. */
@@ -32,13 +34,28 @@ export interface BillingScreenProps {
  * The billing screen (CLAUDE.md §5 item 3): one-handed on a tablet, keyboard-fast on a PC.
  * Used by shared counter tablets and by owners and managers on their own phones.
  */
-export function BillingScreen({
+export function BillingScreen(props: BillingScreenProps) {
+  const menu = useMenu(props.outletId);
+  if (!menu.data) {
+    return (
+      <div className="grid min-h-dvh place-items-center px-6 text-center text-ink-2">
+        {menu.isError
+          ? 'Couldn’t load the menu. Connect to the internet once so this device can keep a copy.'
+          : 'Loading the menu…'}
+      </div>
+    );
+  }
+  return <Billing {...props} menu={menu.data} />;
+}
+
+function Billing({
   outletName,
   deviceCode,
   staff,
   endAction,
   banner,
-}: BillingScreenProps) {
+  menu,
+}: BillingScreenProps & { menu: Menu }) {
   const online = useOnline();
   const { cart, dispatch, totals, count, held, hold, resume } = useBilling();
 
@@ -50,19 +67,20 @@ export function BillingScreen({
   const [billOpen, setBillOpen] = useState(false); // phone: the bill as a bottom sheet
   const searchRef = useRef<HTMLInputElement>(null);
 
-  const results = useMemo(() => searchItems(search), [search]);
+  const results = useMemo(() => searchItems(menu.items, search), [menu.items, search]);
   const items = search
     ? results
     : category === ALL
-      ? ITEMS
-      : ITEMS.filter((i) => i.categoryId === category);
+      ? menu.items
+      : menu.items.filter((i) => i.categoryId === category);
   const heading = search
     ? `Results for “${search.trim()}”`
     : category === ALL
       ? 'All items'
-      : (CATEGORIES.find((c) => c.id === category)?.name ?? '');
+      : (menu.categories.find((c) => c.id === category)?.name ?? '');
 
   const addPlain = (item: MenuItem) => {
+    if (!item.available) return;
     if (needsSize(item)) {
       setOptionsFor(item);
       return;
@@ -176,6 +194,8 @@ export function BillingScreen({
 
       <div className="flex min-h-0 flex-1">
         <CategoryRail
+          categories={menu.categories}
+          items={menu.items}
           value={category}
           onChange={(id) => {
             setCategory(id);
@@ -184,6 +204,7 @@ export function BillingScreen({
         />
         <div className="flex min-w-0 flex-1 flex-col">
           <CategoryChips
+            categories={menu.categories}
             value={category}
             onChange={(id) => {
               setCategory(id);
@@ -225,6 +246,7 @@ export function BillingScreen({
 
       <OptionsDialog
         item={optionsFor}
+        groups={menu.modifierGroups}
         onClose={() => {
           setOptionsFor(undefined);
         }}

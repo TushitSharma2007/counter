@@ -341,6 +341,8 @@ Decided 2026-11-04, after the first doc review. The sections above already refle
 | Staff PINs are exactly 4 digits; the pad signs in on the 4th digit | One tap less on every staff switch |
 | Bill maths and the cart live in `packages/pos-core` (pure, tested, Deno-safe) | Totals must be exactly right and shared with edge functions |
 | An owner's own phone is also a counter at whichever outlet they are at (personal devices) | Owner request: walk into any outlet, sign in once, bill from the phone |
+| Menu: everyone reads, only owners change items and prices, managers set sold out / outlet prices at their outlets; items and categories are switched off, never deleted | Cashiers bill from it; past bills keep their history |
+| Menu tables use composite foreign keys `(id, org_id)` | The database itself stops a row pointing at another tenant's data |
 | Short dedicated stamp-link domain for `/s/` and `/q/` only | It's baked into tags; the brand domain can change |
 
 **Still open:** kiosk GSTIN, stamp-link domain (placeholder in config), NFC reader model (RC522 or PN532).

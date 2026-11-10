@@ -3,7 +3,7 @@ import { getMe, listManagedOutlets, signOut } from '@repo/db';
 import { Avatar, cx, Icon, StatusPill } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router';
-import { ChartNoAxesColumn, ChevronRight, LogOut, Tablet } from 'lucide-react';
+import { ChartNoAxesColumn, ChevronRight, LogOut, Tablet, UtensilsCrossed } from 'lucide-react';
 import { db } from '../lib/db.ts';
 import { loadDevice } from '../lib/device.ts';
 import { forgetPersonal, lastOutlet } from '../lib/personal.ts';
@@ -109,6 +109,27 @@ function Home() {
             </li>
           ))}
         </ul>
+
+        <div>
+          <h2 className="mb-2 text-sm font-medium tracking-wide text-ink-2 uppercase">Manage</h2>
+          <Link
+            to="/menu"
+            className="flex h-20 items-center gap-4 rounded-lg border border-line bg-surface px-4 active:bg-sunken"
+          >
+            <span className="grid size-11 place-items-center rounded-md bg-sunken text-ink-2">
+              <Icon icon={UtensilsCrossed} size={22} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-md font-semibold">Menu</p>
+              <p className="text-sm text-ink-2">
+                {me.data?.role === 'owner'
+                  ? 'Items, sizes, add-ons, GST and outlet prices'
+                  : 'Mark items sold out at your outlets'}
+              </p>
+            </div>
+            <Icon icon={ChevronRight} className="text-ink-2" />
+          </Link>
+        </div>
 
         <section className="flex items-start gap-3 border-t border-line pt-5">
           <Icon icon={Tablet} size={22} className="mt-0.5 shrink-0 text-ink-2" />

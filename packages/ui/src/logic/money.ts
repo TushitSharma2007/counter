@@ -27,3 +27,15 @@ export function formatINR(paise: number, { decimals = 'auto' }: FormatInrOptions
   const whole = paise % 100 === 0;
   return formatter(decimals === 'auto' && whole ? 0 : 2).format(paise / 100);
 }
+
+/** What someone typed in a price field ("149", "149.5", "1,490") as paise, or undefined if it isn't a price. */
+export function parseRupees(text: string): number | undefined {
+  const t = text.replace(/[₹,\s]/g, '');
+  if (!/^\d{1,7}(\.\d{1,2})?$/.test(t)) return undefined;
+  return Math.round(Number(t) * 100);
+}
+
+/** Paise as a price field value: "149", or "149.50" when there are paise. */
+export function rupeesText(paise: number): string {
+  return paise % 100 === 0 ? String(paise / 100) : (paise / 100).toFixed(2);
+}

@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CounterRouteImport } from './routes/counter'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as MenuRouteImport } from './routes/menu'
 import { Route as PinRouteImport } from './routes/pin'
 import { Route as PlaygroundRouteImport } from './routes/playground'
 import { Route as BillOutletIdRouteImport } from './routes/bill.$outletId'
@@ -36,6 +37,11 @@ const HomeRoute = HomeRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MenuRoute = MenuRouteImport.update({
+  id: '/menu',
+  path: '/menu',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PinRoute = PinRouteImport.update({
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/counter': typeof CounterRoute
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
+  '/menu': typeof MenuRoute
   '/pin': typeof PinRoute
   '/playground': typeof PlaygroundRoute
   '/bill/$outletId': typeof BillOutletIdRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/counter': typeof CounterRoute
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
+  '/menu': typeof MenuRoute
   '/pin': typeof PinRoute
   '/playground': typeof PlaygroundRoute
   '/bill/$outletId': typeof BillOutletIdRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/counter': typeof CounterRoute
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
+  '/menu': typeof MenuRoute
   '/pin': typeof PinRoute
   '/playground': typeof PlaygroundRoute
   '/bill/$outletId': typeof BillOutletIdRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/counter'
     | '/home'
     | '/login'
+    | '/menu'
     | '/pin'
     | '/playground'
     | '/bill/$outletId'
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/counter'
     | '/home'
     | '/login'
+    | '/menu'
     | '/pin'
     | '/playground'
     | '/bill/$outletId'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/counter'
     | '/home'
     | '/login'
+    | '/menu'
     | '/pin'
     | '/playground'
     | '/bill/$outletId'
@@ -128,6 +140,7 @@ export interface RootRouteChildren {
   CounterRoute: typeof CounterRoute
   HomeRoute: typeof HomeRoute
   LoginRoute: typeof LoginRoute
+  MenuRoute: typeof MenuRoute
   PinRoute: typeof PinRoute
   PlaygroundRoute: typeof PlaygroundRoute
   BillOutletIdRoute: typeof BillOutletIdRoute
@@ -162,6 +175,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/menu': {
+      id: '/menu'
+      path: '/menu'
+      fullPath: '/menu'
+      preLoaderRoute: typeof MenuRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pin': {
@@ -200,6 +220,7 @@ const rootRouteChildren: RootRouteChildren = {
   CounterRoute: CounterRoute,
   HomeRoute: HomeRoute,
   LoginRoute: LoginRoute,
+  MenuRoute: MenuRoute,
   PinRoute: PinRoute,
   PlaygroundRoute: PlaygroundRoute,
   BillOutletIdRoute: BillOutletIdRoute,

@@ -67,6 +67,7 @@ export async function signOut(db: Db): Promise<void> {
 
 export interface ManagedOutlet {
   id: string;
+  orgId: string;
   name: string;
   code: string;
 }
@@ -101,7 +102,7 @@ export async function listManagedOutlets(db: Db): Promise<ManagedOutlet[]> {
           m.org_id === outlet.org_id && (m.role === 'owner' || m.outlet_ids.includes(outlet.id)),
       ),
     )
-    .map(({ id, name, code }) => ({ id, name, code }));
+    .map(({ id, org_id, name, code }) => ({ id, orgId: org_id, name, code }));
 }
 
 export async function registerDevice(

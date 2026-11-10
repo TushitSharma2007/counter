@@ -29,8 +29,9 @@ function Counter() {
   const actor = useActor();
   const navigate = useNavigate();
   const roster = loadCachedRoster();
+  const device = loadDevice();
 
-  if (!actor) return null;
+  if (!actor || !device) return null;
 
   const lock = async () => {
     setActor(undefined);
@@ -40,6 +41,7 @@ function Counter() {
 
   return (
     <BillingScreen
+      outletId={roster?.outlet.id ?? device.outletId}
       outletName={roster?.outlet.name ?? ''}
       deviceCode={roster?.device.code ?? ''}
       staff={{ id: actor.membershipId, name: actor.name, role: actor.role }}

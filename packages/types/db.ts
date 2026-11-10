@@ -5,7 +5,27 @@ export type Database = {
   
   "public": {
           Tables: {
-            "devices": {
+            "categories": {
+                  Row: {
+                    "created_at": string,"id": string,"is_active": boolean,"name": string,"org_id": string,"sort": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"is_active"?: boolean,"name": string,"org_id": string,"sort"?: number
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"is_active"?: boolean,"name"?: string,"org_id"?: string,"sort"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "categories_org_id_fkey"
+      columns: ["org_id"]
+isOneToOne: false
+      referencedRelation: "orgs"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"devices": {
                   Row: {
                     "code": string,"created_at": string,"created_by": string | null,"id": string,"kind": string,"label": string,"last_seen_at": string | null,"org_id": string,"outlet_id": string,"revoked_at": string | null,"secret_hash": string | null,"user_id": string | null
                   }
@@ -43,6 +63,110 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"item_modifier_groups": {
+                  Row: {
+                    "group_id": string,"item_id": string,"org_id": string,"sort": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "group_id": string,"item_id": string,"org_id": string,"sort"?: number
+                  }
+                  Update: {
+                    "group_id"?: string,"item_id"?: string,"org_id"?: string,"sort"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "item_modifier_groups_group_id_org_id_fkey"
+      columns: ["group_id","org_id"]
+isOneToOne: false
+      referencedRelation: "modifier_groups"
+      referencedColumns: ["id","org_id"]
+    },{
+      foreignKeyName: "item_modifier_groups_item_id_org_id_fkey"
+      columns: ["item_id","org_id"]
+isOneToOne: false
+      referencedRelation: "items"
+      referencedColumns: ["id","org_id"]
+    }
+                  ]
+                },"item_outlet_overrides": {
+                  Row: {
+                    "id": string,"is_available": boolean,"item_id": string,"org_id": string,"outlet_id": string,"price_paise": number | null,"updated_at": string,"variant_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "id"?: string,"is_available"?: boolean,"item_id": string,"org_id": string,"outlet_id": string,"price_paise"?: number | null,"updated_at"?: string,"variant_id"?: string | null
+                  }
+                  Update: {
+                    "id"?: string,"is_available"?: boolean,"item_id"?: string,"org_id"?: string,"outlet_id"?: string,"price_paise"?: number | null,"updated_at"?: string,"variant_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "item_outlet_overrides_item_id_org_id_fkey"
+      columns: ["item_id","org_id"]
+isOneToOne: false
+      referencedRelation: "items"
+      referencedColumns: ["id","org_id"]
+    },{
+      foreignKeyName: "item_outlet_overrides_outlet_id_org_id_fkey"
+      columns: ["outlet_id","org_id"]
+isOneToOne: false
+      referencedRelation: "outlets"
+      referencedColumns: ["id","org_id"]
+    },{
+      foreignKeyName: "item_outlet_overrides_variant_id_org_id_fkey"
+      columns: ["variant_id","org_id"]
+isOneToOne: false
+      referencedRelation: "item_variants"
+      referencedColumns: ["id","org_id"]
+    }
+                  ]
+                },"item_variants": {
+                  Row: {
+                    "id": string,"item_id": string,"name": string,"org_id": string,"price_paise": number,"sort": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "id"?: string,"item_id": string,"name": string,"org_id": string,"price_paise": number,"sort"?: number
+                  }
+                  Update: {
+                    "id"?: string,"item_id"?: string,"name"?: string,"org_id"?: string,"price_paise"?: number,"sort"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "item_variants_item_id_org_id_fkey"
+      columns: ["item_id","org_id"]
+isOneToOne: false
+      referencedRelation: "items"
+      referencedColumns: ["id","org_id"]
+    }
+                  ]
+                },"items": {
+                  Row: {
+                    "category_id": string,"code": string,"created_at": string,"description": string | null,"food": Database["public"]['Enums']["food_type"],"id": string,"image_path": string | null,"is_active": boolean,"name": string,"org_id": string,"price_paise": number,"sort": number,"tax_rate_bp": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "category_id": string,"code": string,"created_at"?: string,"description"?: string | null,"food"?: Database["public"]['Enums']["food_type"],"id"?: string,"image_path"?: string | null,"is_active"?: boolean,"name": string,"org_id": string,"price_paise": number,"sort"?: number,"tax_rate_bp"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "category_id"?: string,"code"?: string,"created_at"?: string,"description"?: string | null,"food"?: Database["public"]['Enums']["food_type"],"id"?: string,"image_path"?: string | null,"is_active"?: boolean,"name"?: string,"org_id"?: string,"price_paise"?: number,"sort"?: number,"tax_rate_bp"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "items_category_id_org_id_fkey"
+      columns: ["category_id","org_id"]
+isOneToOne: false
+      referencedRelation: "categories"
+      referencedColumns: ["id","org_id"]
+    },{
+      foreignKeyName: "items_org_id_fkey"
+      columns: ["org_id"]
+isOneToOne: false
+      referencedRelation: "orgs"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"memberships": {
                   Row: {
                     "created_at": string,"id": string,"is_active": boolean,"org_id": string,"outlet_ids": (string)[],"role": Database["public"]['Enums']["app_role"],"user_id": string
@@ -67,6 +191,46 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
+    }
+                  ]
+                },"modifier_groups": {
+                  Row: {
+                    "created_at": string,"id": string,"name": string,"org_id": string,"sort": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"name": string,"org_id": string,"sort"?: number
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"name"?: string,"org_id"?: string,"sort"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "modifier_groups_org_id_fkey"
+      columns: ["org_id"]
+isOneToOne: false
+      referencedRelation: "orgs"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"modifiers": {
+                  Row: {
+                    "group_id": string,"id": string,"is_active": boolean,"name": string,"org_id": string,"price_paise": number,"sort": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "group_id": string,"id"?: string,"is_active"?: boolean,"name": string,"org_id": string,"price_paise"?: number,"sort"?: number
+                  }
+                  Update: {
+                    "group_id"?: string,"id"?: string,"is_active"?: boolean,"name"?: string,"org_id"?: string,"price_paise"?: number,"sort"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "modifiers_group_id_org_id_fkey"
+      columns: ["group_id","org_id"]
+isOneToOne: false
+      referencedRelation: "modifier_groups"
+      referencedColumns: ["id","org_id"]
     }
                   ]
                 },"orgs": {
@@ -158,6 +322,12 @@ isOneToOne: true
 "revoke_device":
 { Args: { "p_device_id": string }; Returns: undefined
                            },
+"save_item":
+{ Args: { "p": Json }; Returns: string
+                           },
+"save_modifier_group":
+{ Args: { "p": Json }; Returns: string
+                           },
 "set_staff_pin":
 { Args: { "p_membership_id": string,"p_pin": string }; Returns: undefined
                            },
@@ -166,7 +336,7 @@ isOneToOne: true
                            }
           }
           Enums: {
-            "app_role": "owner"|"manager"|"cashier"|"kitchen"|"loyalty_staff"
+            "app_role": "owner"|"manager"|"cashier"|"kitchen"|"loyalty_staff","food_type": "veg"|"nonveg"|"egg"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -282,7 +452,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "app_role": ["owner", "manager", "cashier", "kitchen", "loyalty_staff"]
+            "app_role": ["owner", "manager", "cashier", "kitchen", "loyalty_staff"],"food_type": ["veg", "nonveg", "egg"]
           }
         }
 } as const

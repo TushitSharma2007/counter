@@ -1,6 +1,6 @@
 // Design system: tokens (tokens.css, theme.css), components and icons. The only place styles are defined.
 export { cx } from './cx.ts';
-export { formatINR, type FormatInrOptions } from './logic/money.ts';
+export { formatINR, parseRupees, rupeesText, type FormatInrOptions } from './logic/money.ts';
 export { applyPadKey, type PadKey } from './logic/numpad.ts';
 export { syncLabel, type SyncState } from './logic/sync.ts';
 
@@ -32,8 +32,10 @@ export {
   SheetTrigger,
   type SheetContentProps,
 } from './components/Sheet.tsx';
+export { Select, type SelectProps } from './components/Select.tsx';
 export { StatusPill, type StatusPillProps, type StatusTone } from './components/StatusPill.tsx';
 export { SyncIndicator, type SyncIndicatorProps } from './components/SyncIndicator.tsx';
 export { Table, TBody, Td, Th, THead, Tr } from './components/Table.tsx';
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './components/Tabs.tsx';
 export { toast, Toaster, type ToastOptions, type ToastTone } from './components/Toast.tsx';
+export { Switch, type SwitchProps } from './components/Switch.tsx';

@@ -75,6 +75,7 @@ function PersonalBilling() {
 
   return (
     <BillingScreen
+      outletId={outletId}
       outletName={outlet?.name ?? cachedPersonalDevice(outletId)?.outletName ?? ''}
       deviceCode={device.data.code}
       staff={{ id: me.data.userId, name: me.data.name, role: me.data.role }}

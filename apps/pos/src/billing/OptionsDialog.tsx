@@ -2,7 +2,7 @@ import type { Modifier } from '@repo/pos-core';
 import { Button, cx, Dialog, DialogContent, FoodMark, formatINR, Icon } from '@repo/ui';
 import { Check } from 'lucide-react';
 import { useState } from 'react';
-import { MODIFIER_GROUPS, type MenuItem, type Variant } from '../fixtures/menu.ts';
+import type { MenuItem, MenuModifierGroup, MenuVariant as Variant } from '@repo/db';
 
 export interface OptionsChoice {
   variant?: Variant;
@@ -12,10 +12,12 @@ export interface OptionsChoice {
 /** Size (one) and add-ons (any) for an item. Big buttons; the price updates as you pick. */
 export function OptionsDialog({
   item,
+  groups,
   onClose,
   onConfirm,
 }: {
   item: MenuItem | undefined;
+  groups: Record<string, MenuModifierGroup>;
   onClose: () => void;
   onConfirm: (item: MenuItem, choice: OptionsChoice) => void;
 }) {
@@ -26,22 +28,28 @@ export function OptionsDialog({
         if (!open) onClose();
       }}
     >
-      {item ? <OptionsBody key={item.id} item={item} onConfirm={onConfirm} /> : null}
+      {item ? (
+        <OptionsBody key={item.id} item={item} groups={groups} onConfirm={onConfirm} />
+      ) : null}
     </Dialog>
   );
 }
 
 function OptionsBody({
   item,
+  groups: allGroups,
   onConfirm,
 }: {
   item: MenuItem;
+  groups: Record<string, MenuModifierGroup>;
   onConfirm: (item: MenuItem, choice: OptionsChoice) => void;
 }) {
-  const [variant, setVariant] = useState<Variant | undefined>(item.variants?.[0]);
+  const [variant, setVariant] = useState<Variant | undefined>(
+    item.variants.find((v) => v.available),
+  );
   const [picked, setPicked] = useState<Modifier[]>([]);
-  const groups = (item.modifierGroups ?? []).flatMap((id) => {
-    const group = MODIFIER_GROUPS[id];
+  const groups = item.modifierGroupIds.flatMap((id) => {
+    const group = allGroups[id];
     return group ? [group] : [];
   });
   const unit =
@@ -76,7 +84,7 @@ function OptionsBody({
         <p className="-mt-2 flex items-center gap-2 text-sm text-ink-2">
           <FoodMark type={item.food} size={13} /> {item.code}
         </p>
-        {item.variants ? (
+        {item.variants.length > 0 ? (
           <fieldset>
             <legend className="mb-2 text-sm font-semibold">Size</legend>
             <div className="grid grid-cols-2 gap-2">
@@ -88,18 +96,22 @@ function OptionsBody({
                     type="button"
                     role="radio"
                     aria-checked={on}
+                    disabled={!v.available}
                     onClick={() => {
                       setVariant(v);
                     }}
                     className={cx(
                       'flex h-14 items-center justify-between rounded-md border px-4 text-base font-medium',
+                      'disabled:border-dashed disabled:bg-sunken disabled:opacity-60',
                       on
                         ? 'border-accent bg-accent-soft ring-1 ring-accent'
                         : 'border-line-strong bg-surface',
                     )}
                   >
                     {v.name}
-                    <span className="num text-ink-2">{formatINR(v.pricePaise)}</span>
+                    <span className="num text-ink-2">
+                      {v.available ? formatINR(v.pricePaise) : 'Sold out'}
+                    </span>
                   </button>
                 );
               })}

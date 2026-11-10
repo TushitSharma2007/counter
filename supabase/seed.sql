@@ -86,3 +86,90 @@ begin
   end loop;
 end;
 $$;
+
+-- Menu -------------------------------------------------------------------------------------------
+-- Prices are tax-inclusive, 5% GST (restaurant service). Coffees come Regular or Large.
+
+do $$
+declare
+  org constant uuid := '0193a000-0000-7000-8000-000000000001';
+  mpn constant uuid := '0193a000-0000-7000-8000-000000000102';
+  cat record;
+  it record;
+  milk uuid;
+  extras uuid;
+  item_id uuid;
+begin
+  for cat in
+    select * from (values
+      (1, 'Hot Coffee'), (2, 'Cold Coffee'), (3, 'Tea'), (4, 'Shakes'), (5, 'Snacks'), (6, 'Desserts')
+    ) as c (sort, name)
+  loop
+    insert into public.categories (org_id, name, sort) values (org, cat.name, cat.sort);
+  end loop;
+
+  insert into public.modifier_groups (org_id, name, sort) values (org, 'Milk', 1) returning id into milk;
+  insert into public.modifier_groups (org_id, name, sort) values (org, 'Extras', 2) returning id into extras;
+  insert into public.modifiers (org_id, group_id, name, price_paise, sort) values
+    (org, milk, 'Oat milk', 5000, 0), (org, milk, 'Almond milk', 5000, 1),
+    (org, extras, 'Extra shot', 4000, 0), (org, extras, 'Hazelnut syrup', 3000, 1),
+    (org, extras, 'Whipped cream', 3000, 2);
+
+  -- code, name, category, food, price, large price (null = one size), add-on groups
+  for it in
+    select * from (values
+      ('ESP', 'Espresso', 'Hot Coffee', 'veg', 9900, null, 'extras'),
+      ('AME', 'Americano', 'Hot Coffee', 'veg', 12900, null, 'extras'),
+      ('CAP', 'Cappuccino', 'Hot Coffee', 'veg', 14900, 18900, 'milk,extras'),
+      ('LAT', 'Café Latte', 'Hot Coffee', 'veg', 15900, 19900, 'milk,extras'),
+      ('HZL', 'Hazelnut Latte', 'Hot Coffee', 'veg', 17900, 21900, 'milk,extras'),
+      ('MOC', 'Mocha', 'Hot Coffee', 'veg', 18900, 22900, 'milk,extras'),
+      ('FLT', 'Filter Coffee', 'Hot Coffee', 'veg', 7900, null, ''),
+      ('CC', 'Cold Coffee', 'Cold Coffee', 'veg', 14900, 18900, 'milk,extras'),
+      ('IAM', 'Iced Americano', 'Cold Coffee', 'veg', 14900, null, 'extras'),
+      ('IMO', 'Iced Mocha', 'Cold Coffee', 'veg', 18900, null, 'milk,extras'),
+      ('CBR', 'Cold Brew', 'Cold Coffee', 'veg', 19900, null, ''),
+      ('FHZ', 'Hazelnut Frappé', 'Cold Coffee', 'veg', 21900, null, 'milk,extras'),
+      ('CHA', 'Masala Chai', 'Tea', 'veg', 4900, null, ''),
+      ('GCH', 'Ginger Chai', 'Tea', 'veg', 4900, null, ''),
+      ('LIT', 'Lemon Iced Tea', 'Tea', 'veg', 9900, null, ''),
+      ('GRT', 'Green Tea', 'Tea', 'veg', 8900, null, ''),
+      ('ORS', 'Oreo Shake', 'Shakes', 'veg', 17900, null, ''),
+      ('CHS', 'Chocolate Shake', 'Shakes', 'veg', 16900, null, ''),
+      ('MGS', 'Mango Shake', 'Shakes', 'veg', 15900, null, ''),
+      ('VPF', 'Veg Puff', 'Snacks', 'veg', 3900, null, ''),
+      ('PPF', 'Paneer Puff', 'Snacks', 'veg', 4900, null, ''),
+      ('EPF', 'Egg Puff', 'Snacks', 'egg', 4500, null, ''),
+      ('CPF', 'Chicken Puff', 'Snacks', 'nonveg', 5900, null, ''),
+      ('PSW', 'Paneer Sandwich', 'Snacks', 'veg', 11900, null, ''),
+      ('CSW', 'Chicken Sandwich', 'Snacks', 'nonveg', 14900, null, ''),
+      ('FRI', 'Masala Fries', 'Snacks', 'veg', 9900, null, ''),
+      ('GBR', 'Garlic Bread', 'Snacks', 'veg', 10900, null, ''),
+      ('LAV', 'Choco Lava Cake', 'Desserts', 'egg', 12900, null, ''),
+      ('BRW', 'Walnut Brownie', 'Desserts', 'egg', 9900, null, ''),
+      ('CHK', 'Blueberry Cheesecake', 'Desserts', 'egg', 17900, null, '')
+    ) as i (code, name, category, food, price, large, groups)
+  loop
+    insert into public.items (org_id, category_id, name, code, food, price_paise, tax_rate_bp, sort)
+    select org, c.id, it.name, it.code, it.food::public.food_type, it.price, 500,
+           (select count(*) from public.items where org_id = org)
+    from public.categories c where c.org_id = org and c.name = it.category
+    returning id into item_id;
+
+    if it.large is not null then
+      insert into public.item_variants (org_id, item_id, name, price_paise, sort) values
+        (org, item_id, 'Regular', it.price, 0), (org, item_id, 'Large', it.large, 1);
+    end if;
+    if it.groups like '%milk%' then
+      insert into public.item_modifier_groups (org_id, item_id, group_id, sort) values (org, item_id, milk, 0);
+    end if;
+    if it.groups like '%extras%' then
+      insert into public.item_modifier_groups (org_id, item_id, group_id, sort) values (org, item_id, extras, 1);
+    end if;
+  end loop;
+
+  -- Mango Shake is sold out at MP Nagar today.
+  insert into public.item_outlet_overrides (org_id, outlet_id, item_id, is_available)
+  select org, mpn, id, false from public.items where org_id = org and code = 'MGS';
+end;
+$$;

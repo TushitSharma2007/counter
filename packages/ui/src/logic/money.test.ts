@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatINR } from './money.ts';
+import { formatINR, parseRupees, rupeesText } from './money.ts';
 
 describe('formatINR', () => {
   it('drops .00 on whole rupees by default', () => {
@@ -26,5 +26,24 @@ describe('formatINR', () => {
 
   it('rejects fractional paise', () => {
     expect(() => formatINR(10.5)).toThrow(RangeError);
+  });
+});
+
+describe('parseRupees / rupeesText', () => {
+  it('reads what people type in a price field', () => {
+    expect(parseRupees('149')).toBe(14_900);
+    expect(parseRupees('149.5')).toBe(14_950);
+    expect(parseRupees('₹1,490.05')).toBe(1_49_005);
+    expect(parseRupees(' 0 ')).toBe(0);
+  });
+
+  it('rejects anything that is not a price', () => {
+    for (const bad of ['', 'abc', '-5', '1.234', '1.2.3']) expect(parseRupees(bad)).toBeUndefined();
+  });
+
+  it('round-trips', () => {
+    expect(rupeesText(14_900)).toBe('149');
+    expect(rupeesText(14_950)).toBe('149.50');
+    expect(parseRupees(rupeesText(1_49_005))).toBe(1_49_005);
   });
 });
