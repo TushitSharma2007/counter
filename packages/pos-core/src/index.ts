@@ -30,4 +30,5 @@ export {
   type OrderLine,
   type OrderPayload,
   type OrderPayment,
+  type PaymentPart,
 } from './logic/order.ts';

@@ -25,6 +25,7 @@ export {
 } from './staff-auth.ts';
 export { GST_SLABS_BP, ItemInput, ModifierGroupInput } from './contracts/menu.ts';
 export {
+  fetchBillingContext,
   fetchItemOverrides,
   fetchItemVariants,
   fetchMenu,
@@ -76,3 +77,4 @@ export {
   type BusinessDetails,
   type OutletDetails,
 } from './settings.ts';
+export { fetchBills, voidBillFromPhone, type ServerBill } from './bills.ts';

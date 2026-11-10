@@ -89,11 +89,19 @@ export interface OrderPayload {
   payments: OrderPayment[];
 }
 
+/** How part (or all) of a bill was paid. Cash may be more than the part, when change was given. */
+export interface PaymentPart {
+  mode: OrderPayment['mode'];
+  amountPaise: number;
+  tenderedPaise?: number;
+}
+
 export interface BuildOrderInput {
   cart: Cart;
   totals: BillTotals;
   tax: TaxSettings;
-  payment: { mode: OrderPayment['mode']; tenderedPaise?: number };
+  /** One part for a normal bill, several for a split (e.g. ₹200 cash + ₹156 UPI). Must add up to the total. */
+  payments: PaymentPart[];
   device: { id: string; code: string };
   outlet: { id: string; code: string };
   billedBy: OrderPayload['billedBy'];
@@ -105,6 +113,14 @@ export interface BuildOrderInput {
 }
 
 export function buildOrder(input: BuildOrderInput): OrderPayload {
+  const paid = input.payments.reduce((sum, p) => sum + p.amountPaise, 0);
+  if (
+    input.payments.length === 0 ||
+    paid !== input.totals.totalPaise ||
+    input.payments.some((p) => p.amountPaise <= 0)
+  ) {
+    throw new RangeError(`Payments (${paid}) must add up to the bill (${input.totals.totalPaise})`);
+  }
   const newId = input.newId ?? (() => uuidv7());
   const fy = financialYear(input.now);
   return {
@@ -139,17 +155,12 @@ export function buildOrder(input: BuildOrderInput): OrderPayload {
       taxRateBp: l.taxRateBp,
       lineTotalPaise: l.unitPaise * l.qty,
     })),
-    payments: [
-      {
-        id: newId(),
-        mode: input.payment.mode,
-        amountPaise: input.totals.totalPaise,
-        tenderedPaise:
-          input.payment.tenderedPaise !== undefined &&
-          input.payment.tenderedPaise > input.totals.totalPaise
-            ? input.payment.tenderedPaise
-            : null,
-      },
-    ],
+    payments: input.payments.map((p) => ({
+      id: newId(),
+      mode: p.mode,
+      amountPaise: p.amountPaise,
+      tenderedPaise:
+        p.tenderedPaise !== undefined && p.tenderedPaise > p.amountPaise ? p.tenderedPaise : null,
+    })),
   };
 }

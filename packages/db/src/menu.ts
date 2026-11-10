@@ -102,32 +102,9 @@ export async function fetchMenu(
   let orgId = givenOrg;
   let billing: BillingContext | undefined;
   if (outletId) {
-    const { data, error } = await db
-      .from('outlets')
-      .select(
-        'id, org_id, name, code, address, city, upi_vpa, orgs (name, gstin, gst_scheme, prices_include_tax, day_close_hour)',
-      )
-      .eq('id', outletId)
-      .single();
-    if (error) throw error;
-    orgId ??= data.org_id;
-    billing = {
-      outlet: {
-        id: data.id,
-        name: data.name,
-        code: data.code,
-        address: data.address,
-        city: data.city,
-        upiVpa: data.upi_vpa,
-      },
-      org: {
-        name: data.orgs.name,
-        gstin: data.orgs.gstin,
-        gstScheme: data.orgs.gst_scheme === 'composition' ? 'composition' : 'regular',
-        pricesIncludeTax: data.orgs.prices_include_tax,
-        dayCloseHour: data.orgs.day_close_hour,
-      },
-    };
+    const found = await fetchBillingContextWithOrg(db, outletId);
+    billing = found.billing;
+    orgId ??= found.orgId;
   }
   if (!orgId) throw new Error('fetchMenu needs an outlet or an org');
 
@@ -342,4 +319,41 @@ export async function fetchItemVariants(
     .limit(50);
   if (error) throw error;
   return data;
+}
+
+async function fetchBillingContextWithOrg(
+  db: Db,
+  outletId: string,
+): Promise<{ orgId: string; billing: BillingContext }> {
+  const { data, error } = await db
+    .from('outlets')
+    .select(
+      'id, org_id, name, code, address, city, upi_vpa, orgs (name, gstin, gst_scheme, prices_include_tax, day_close_hour)',
+    )
+    .eq('id', outletId)
+    .single();
+  if (error) throw error;
+  const billing: BillingContext = {
+    outlet: {
+      id: data.id,
+      name: data.name,
+      code: data.code,
+      address: data.address,
+      city: data.city,
+      upiVpa: data.upi_vpa,
+    },
+    org: {
+      name: data.orgs.name,
+      gstin: data.orgs.gstin,
+      gstScheme: data.orgs.gst_scheme === 'composition' ? 'composition' : 'regular',
+      pricesIncludeTax: data.orgs.prices_include_tax,
+      dayCloseHour: data.orgs.day_close_hour,
+    },
+  };
+  return { orgId: data.org_id, billing };
+}
+
+/** What a receipt needs about the outlet and the business. */
+export async function fetchBillingContext(db: Db, outletId: string): Promise<BillingContext> {
+  return (await fetchBillingContextWithOrg(db, outletId)).billing;
 }

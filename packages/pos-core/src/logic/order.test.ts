@@ -64,7 +64,7 @@ describe('buildOrder', () => {
     cart: { ...cart, customerPhone: '98260' },
     totals,
     tax: DEFAULT_TAX,
-    payment: { mode: 'cash', tenderedPaise: 50_000 },
+    payments: [{ mode: 'cash', amountPaise: totals.totalPaise, tenderedPaise: 50_000 }],
     device: { id: 'device-1', code: 'T1' },
     outlet: { id: 'outlet-1', code: 'ARC' },
     billedBy: { membershipId: 'm-1', name: 'Priya Sharma' },
@@ -102,5 +102,37 @@ describe('buildOrder', () => {
 
   it('keeps a customer number only when it is a full 10 digits', () => {
     expect(order.customerPhone).toBeNull();
+  });
+
+  const base = {
+    cart,
+    totals,
+    tax: DEFAULT_TAX,
+    device: { id: 'device-1', code: 'T1' },
+    outlet: { id: 'outlet-1', code: 'ARC' },
+    billedBy: { membershipId: null, name: 'Priya Sharma' },
+    seq: 13,
+    now: '2026-11-10T06:00:00Z',
+  };
+
+  it('records a split payment as separate parts', () => {
+    const split = buildOrder({
+      ...base,
+      payments: [
+        { mode: 'cash', amountPaise: 10_000 },
+        { mode: 'upi', amountPaise: 12_900 },
+      ],
+    });
+    expect(split.payments.map((p) => [p.mode, p.amountPaise, p.tenderedPaise])).toEqual([
+      ['cash', 10_000, null],
+      ['upi', 12_900, null],
+    ]);
+  });
+
+  it('refuses payments that don’t add up to the bill', () => {
+    expect(() =>
+      buildOrder({ ...base, payments: [{ mode: 'cash', amountPaise: 10_000 }] }),
+    ).toThrow(RangeError);
+    expect(() => buildOrder({ ...base, payments: [] })).toThrow(RangeError);
   });
 });

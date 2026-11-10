@@ -50,8 +50,9 @@ export function Receipt({
 }) {
   const totals = computeBill(bill.lines, bill.tax);
   const composition = bill.tax.gstScheme === 'composition';
-  const payment = bill.payments[0];
-  const change = payment?.tenderedPaise ? payment.tenderedPaise - payment.amountPaise : 0;
+  const cash = bill.payments.find((p) => p.tenderedPaise !== null);
+  const change = cash?.tenderedPaise ? cash.tenderedPaise - cash.amountPaise : 0;
+  const split = bill.payments.length > 1;
   const address = [context.outlet.address, context.outlet.city].filter(Boolean).join(', ');
 
   return (
@@ -138,11 +139,13 @@ export function Receipt({
       ) : null}
       <div className="my-1 border-t border-receipt-ink" />
       <Row label="Total" value={formatINR(totals.totalPaise)} strong />
-      {payment ? (
+      {bill.payments.length > 0 ? (
         <p className="mt-1">
-          Paid by {PAID_BY[payment.mode] ?? payment.mode}
-          {payment.tenderedPaise
-            ? ` · given ${formatINR(payment.tenderedPaise)}, change ${formatINR(change)}`
+          {split
+            ? `Paid ${bill.payments.map((p) => `${PAID_BY[p.mode] ?? p.mode} ${formatINR(p.amountPaise)}`).join(' + ')}`
+            : `Paid by ${PAID_BY[bill.payments[0]?.mode ?? 'cash'] ?? ''}`}
+          {cash?.tenderedPaise
+            ? ` · given ${formatINR(cash.tenderedPaise)}, change ${formatINR(change)}`
             : ''}
         </p>
       ) : null}

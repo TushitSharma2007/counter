@@ -2,7 +2,13 @@ import { Button, formatINR, Sheet, SheetContent, toast } from '@repo/ui';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { TopBar, type TopBarProps } from '../components/TopBar.tsx';
 import type { Menu, MenuItem } from '@repo/db';
-import { buildOrder, financialYear, DEFAULT_TAX, type OrderPayload } from '@repo/pos-core';
+import {
+  buildOrder,
+  financialYear,
+  DEFAULT_TAX,
+  type OrderPayload,
+  type PaymentPart,
+} from '@repo/pos-core';
 import type { StoredBill } from '@repo/db';
 import { BillsSheet } from './BillsSheet.tsx';
 import { PaidSheet } from './PaidSheet.tsx';
@@ -13,7 +19,7 @@ import { HeldSheet } from './HeldSheet.tsx';
 import { needsSize, searchItems, useMenu } from './menu-data.ts';
 import { ALL, CategoryChips, CategoryRail, ItemGrid } from './Menu.tsx';
 import { OptionsDialog, type OptionsChoice } from './OptionsDialog.tsx';
-import { PayDialog, type Payment } from './PayDialog.tsx';
+import { PayDialog } from './PayDialog.tsx';
 import { useBilling } from './state.ts';
 
 export interface BillingScreenProps {
@@ -169,7 +175,7 @@ function Billing({
   };
 
   // Paid: number the bill on this device and queue it, in one step. It syncs in the background.
-  const paid = async (payment: Payment) => {
+  const paid = async (payments: PaymentPart[]) => {
     if (!context) return;
     const now = new Date().toISOString();
     const stored = await outbox.addBill(device.id, financialYear(now), (seq) =>
@@ -177,10 +183,7 @@ function Billing({
         cart,
         totals,
         tax,
-        payment: {
-          mode: payment.mode,
-          ...(payment.tenderedPaise !== undefined ? { tenderedPaise: payment.tenderedPaise } : {}),
-        },
+        payments,
         device: { id: device.id, code: device.code },
         outlet: { id: context.outlet.id, code: context.outlet.code },
         billedBy,

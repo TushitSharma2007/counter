@@ -1,4 +1,5 @@
-import { checkPinOffline, type StoredBill } from '@repo/db';
+import { checkPinOffline } from '@repo/db';
+import type { OrderPayload } from '@repo/pos-core';
 import { Avatar, Button, cx, Dialog, DialogContent, formatINR, Input, NumberPad } from '@repo/ui';
 import { useState } from 'react';
 
@@ -7,6 +8,12 @@ export interface Approver {
   name: string;
   /** Managers at a counter tablet confirm with their PIN (checked here, works offline). */
   pinHash?: string;
+}
+
+/** Any bill: one kept on this device, or one fetched from the server. */
+export interface VoidableBill {
+  id: string;
+  payload: OrderPayload;
 }
 
 const REASONS = ['Customer cancelled', 'Wrong item billed', 'Billing mistake', 'Payment failed'];
@@ -19,7 +26,7 @@ export function VoidDialog({
   onClose,
   onVoid,
 }: {
-  bill: StoredBill | undefined;
+  bill: VoidableBill | undefined;
   /** Managers who can approve at this outlet (counter tablets). */
   approvers: Approver[];
   /** The signed-in owner or manager on their own phone approves as themselves. */
@@ -55,7 +62,7 @@ function VoidBody({
   onVoid,
   onClose,
 }: {
-  bill: StoredBill;
+  bill: VoidableBill;
   approvers: Approver[];
   self?: Approver;
   onVoid: (v: { reason: string; approvedBy: string; approvedByName: string }) => void;

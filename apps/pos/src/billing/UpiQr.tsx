@@ -1,5 +1,5 @@
 import { upiIntentAdapter } from '@repo/payments';
-import { Button, Icon, formatINR } from '@repo/ui';
+import { Button, cx, formatINR, Icon } from '@repo/ui';
 import { Maximize2, X } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
@@ -10,11 +10,14 @@ export function UpiQr({
   payeeName,
   amountPaise,
   note,
+  compact = false,
 }: {
   vpa: string;
   payeeName: string;
   amountPaise: number;
   note: string;
+  /** Stack the QR above its text, for narrow columns (split payment). */
+  compact?: boolean;
 }) {
   const [image, setImage] = useState<string>();
   const [full, setFull] = useState(false);
@@ -36,7 +39,9 @@ export function UpiQr({
 
   return (
     <>
-      <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-start">
+      <div
+        className={cx('flex flex-col items-center gap-3', !compact && 'sm:flex-row sm:items-start')}
+      >
         <img
           src={image}
           alt={`UPI QR for ${formatINR(amountPaise)} to ${vpa}`}
