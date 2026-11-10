@@ -120,7 +120,7 @@ user ── membership(org_id, role, outlet_ids[])
    - Category rail + item grid, built for **one-handed tablet use**.
    - Cart with modifiers, qty, notes, item- and bill-level discounts (role-limited).
    - Order types: counter / takeaway / dine-in (table optional) / delivery (manual).
-   - Payments: cash (change calculation), UPI (dynamic QR shown **full-screen on the same tablet**, turned toward the customer; no separate customer-facing screen assumed), card (manual), **split payment**, due/credit (customer khata).
+   - Payments: cash (change calculation), UPI (dynamic QR shown **full-screen on the same tablet**, turned toward the customer; no separate customer-facing screen assumed), card (manual), **split payment**. No khata/credit: bills are paid in full at the counter.
    - Attach a customer by phone, which auto-links their loyalty card (§6). The cashier sees the cardholder's **name** before confirming.
    - Print / share the bill: browser print with **58 mm and 80 mm** layouts (ESC/POS over Bluetooth/USB later), WhatsApp share link through `wa.me` (free).
    - Hold/park orders, reprint, void with a reason (manager PIN).
@@ -348,6 +348,7 @@ Decided 2026-11-04, after the first doc review. The sections above already refle
 | No item photos anywhere in the app | Owner decision: menus are text, codes and food marks; keeps the app light and fast |
 | Bills sync with the device's own credential (counter tablet key, or the owner's login on a personal phone), not the cashier's session | A cashier who signed in offline has no session, but their bills must still sync |
 | Voids are approved with a manager's PIN checked on the device (offline-capable); the server checks the approver manages that outlet and writes the audit log | Voids must work at a busy counter with no internet |
+| No khata (customer credit / due) in this product | Owner decision: bills are paid in full at the counter. The database enum keeps an unused `due` value. |
 | Short dedicated stamp-link domain for `/s/` and `/q/` only | It's baked into tags; the brand domain can change |
 
 **Still open:** kiosk GSTIN, stamp-link domain (placeholder in config), NFC reader model (RC522 or PN532).

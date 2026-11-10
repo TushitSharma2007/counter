@@ -1,7 +1,8 @@
 // The bill being built at the counter. A pure reducer, so it is easy to test and to persist.
 
 export type OrderType = 'counter' | 'takeaway' | 'dine_in' | 'delivery';
-export type PaymentMode = 'cash' | 'upi' | 'card' | 'due' | 'split';
+// No khata (credit) in this product: bills are paid in full at the counter.
+export type PaymentMode = 'cash' | 'upi' | 'card' | 'split';
 
 export interface Modifier {
   id: string;

@@ -29,7 +29,6 @@ export function PayDialog({
   open,
   totalPaise,
   initialMode,
-  customerPhone,
   upi,
   onClose,
   onPaid,
@@ -37,7 +36,6 @@ export function PayDialog({
   open: boolean;
   totalPaise: number;
   initialMode: PaymentMode;
-  customerPhone: string;
   /** The outlet's UPI ID and the name customers see; undefined when not set up. */
   upi: { vpa: string; payeeName: string } | undefined;
   onClose: () => void;
@@ -54,7 +52,6 @@ export function PayDialog({
         <PayBody
           totalPaise={totalPaise}
           initialMode={initialMode === 'split' ? 'cash' : initialMode}
-          customerPhone={customerPhone}
           upi={upi}
           onPaid={onPaid}
         />
@@ -66,13 +63,11 @@ export function PayDialog({
 function PayBody({
   totalPaise,
   initialMode,
-  customerPhone,
   upi,
   onPaid,
 }: {
   totalPaise: number;
   initialMode: Payment['mode'];
-  customerPhone: string;
   upi: { vpa: string; payeeName: string } | undefined;
   onPaid: (payment: Payment) => void;
 }) {
@@ -80,8 +75,7 @@ function PayBody({
   const [received, setReceived] = useState(String(totalPaise / 100));
   const receivedPaise = Number(received || '0') * 100;
   const change = cashChange(totalPaise, receivedPaise);
-  const needsPhone = mode === 'due' && customerPhone.length !== 10;
-  const canConfirm = mode === 'cash' ? change >= 0 : !needsPhone;
+  const canConfirm = mode === 'cash' ? change >= 0 : true;
 
   const confirm = () => {
     if (!canConfirm) return;
@@ -100,7 +94,7 @@ function PayBody({
           onClick={confirm}
           className="w-full text-lg sm:w-auto sm:min-w-56"
         >
-          {mode === 'cash' ? 'Bill paid' : mode === 'due' ? 'Add to khata' : 'Payment received'}
+          {mode === 'cash' ? 'Bill paid' : 'Payment received'}
         </Button>
       }
     >
@@ -183,18 +177,6 @@ function PayBody({
         {mode === 'card' ? (
           <p className="rounded-md bg-sunken p-4 text-base">
             Charge {formatINR(totalPaise)} on the card machine, then confirm.
-          </p>
-        ) : null}
-        {mode === 'due' ? (
-          <p
-            className={cx(
-              'rounded-md p-4 text-base',
-              needsPhone ? 'bg-warning-soft text-warning' : 'bg-sunken',
-            )}
-          >
-            {needsPhone
-              ? 'Add the customer’s 10-digit number to the bill to put this on their khata.'
-              : `${formatINR(totalPaise)} goes on the khata for +91 ${customerPhone}.`}
           </p>
         ) : null}
       </div>

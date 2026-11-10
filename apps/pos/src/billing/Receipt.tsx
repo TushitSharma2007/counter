@@ -23,7 +23,6 @@ const PAID_BY: Record<string, string> = {
   cash: 'Cash',
   upi: 'UPI',
   card: 'Card',
-  due: 'Khata (due)',
 };
 
 const money = (paise: number) => formatINR(paise, { decimals: 'always' });

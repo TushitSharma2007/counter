@@ -11,5 +11,4 @@ export const PAYMENT_MODES: { value: Exclude<PaymentMode, 'split'>; label: strin
   { value: 'cash', label: 'Cash' },
   { value: 'upi', label: 'UPI' },
   { value: 'card', label: 'Card' },
-  { value: 'due', label: 'Due' },
 ];

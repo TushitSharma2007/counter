@@ -301,7 +301,6 @@ function Billing({
         open={paying}
         totalPaise={totals.totalPaise}
         initialMode={cart.paymentMode}
-        customerPhone={cart.customerPhone}
         upi={
           context?.outlet.upiVpa
             ? { vpa: context.outlet.upiVpa, payeeName: context.org.name }
