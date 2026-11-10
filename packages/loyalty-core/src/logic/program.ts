@@ -75,7 +75,7 @@ export const Program = z
     design: z
       .object({
         cardName: z.string().min(1).default('Loyalty card'),
-        logoUrl: z.string().url().optional(),
+        logoUrl: z.url().optional(),
         bgColor: z.string().default('#fffdf9'),
         inkColor: z.string().default('#2c4a7c'),
         stampIcon: z.enum(['cup', 'bean', 'leaf', 'star', 'logo']).default('cup'),
