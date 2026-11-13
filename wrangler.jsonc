@@ -1,0 +1,12 @@
+// Cloudflare Workers static assets: hosts the POS PWA (CLAUDE.md §2, hosting).
+// Cloudflare's build runs `pnpm --filter @repo/pos build`, then `npx wrangler deploy` with this file.
+// "name" must match the Worker's name in the Cloudflare dashboard.
+{
+  "name": "counter-pos",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./apps/pos/dist",
+    // Unknown paths (/home, /counter, /logbook…) serve index.html; the router takes over.
+    "not_found_handling": "single-page-application",
+  },
+}
